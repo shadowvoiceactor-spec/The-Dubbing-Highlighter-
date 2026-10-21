@@ -1,0 +1,226 @@
+name: Build APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.5
+      - name: Create Android project from index.html
+        run: |
+          set -e
+          P=android-build
+          rm -rf $P
+          for d in app/src/main/assets app/src/main/java/com/dubbing/highlighter app/src/main/res/values app/src/main/res/drawable app/src/main/res/mipmap-anydpi-v26; do mkdir -p $P/$d; done
+          cp index.html $P/app/src/main/assets/index.html
+
+          cat > $P/settings.gradle <<'EOF'
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement { repositories { google(); mavenCentral() } }
+          rootProject.name = "DubbingHighlighter"
+          include ":app"
+          EOF
+          cat > $P/build.gradle <<'EOF'
+          plugins { id "com.android.application" version "8.2.2" apply false }
+          EOF
+          printf "android.useAndroidX=true\norg.gradle.jvmargs=-Xmx2g\n" > $P/gradle.properties
+          cat > $P/app/build.gradle <<'EOF'
+          plugins { id "com.android.application" }
+          android {
+              namespace "com.dubbing.highlighter"
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.dubbing.highlighter"
+                  minSdk 26
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+          EOF
+          cat > $P/app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <application
+                  android:label="The Dubbing Highlighter"
+                  android:icon="@mipmap/ic_launcher"
+                  android:allowBackup="true"
+                  android:theme="@style/AppTheme">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|uiMode"
+                      android:windowSoftInputMode="adjustResize">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+          cat > $P/app/src/main/res/values/styles.xml <<'EOF'
+          <resources>
+              <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+                  <item name="android:statusBarColor">#1d4ed8</item>
+                  <item name="android:navigationBarColor">#1d4ed8</item>
+              </style>
+              <color name="ic_bg">#1D4ED8</color>
+          </resources>
+          EOF
+          cat > $P/app/src/main/res/drawable/ic_fg.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+              <path android:fillColor="#FFE066" android:pathData="M30,40h48v12h-48z"/>
+              <path android:fillColor="#FFFFFF" android:pathData="M30,58h48v5h-48z"/>
+              <path android:fillColor="#FFFFFF" android:pathData="M30,68h30v5h-30z"/>
+          </vector>
+          EOF
+          cat > $P/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@color/ic_bg"/>
+              <foreground android:drawable="@drawable/ic_fg"/>
+          </adaptive-icon>
+          EOF
+          cat > $P/app/src/main/java/com/dubbing/highlighter/MainActivity.java <<'EOF'
+          package com.dubbing.highlighter;
+
+          import android.app.Activity;
+          import android.content.ContentValues;
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.os.Bundle;
+          import android.os.Environment;
+          import android.provider.MediaStore;
+          import android.util.Base64;
+          import android.view.WindowManager;
+          import android.webkit.*;
+          import android.widget.Toast;
+
+          import java.io.OutputStream;
+
+          public class MainActivity extends Activity {
+              private WebView web;
+              private ValueCallback<Uri[]> fileCb;
+              private static final int REQ_FILE = 1;
+
+              @Override
+              protected void onCreate(Bundle b) {
+                  super.onCreate(b);
+                  getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                  web = new WebView(this);
+                  setContentView(web);
+
+                  WebSettings s = web.getSettings();
+                  s.setJavaScriptEnabled(true);
+                  s.setDomStorageEnabled(true);
+                  s.setAllowFileAccess(true);
+                  s.setAllowContentAccess(true);
+
+                  web.addJavascriptInterface(new Saver(), "AndroidSaver");
+
+                  web.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
+                          Uri u = r.getUrl();
+                          if ("file".equals(u.getScheme()) || "blob".equals(u.getScheme())) return false;
+                          try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) {}
+                          return true;
+                      }
+                  });
+
+                  web.setWebChromeClient(new WebChromeClient() {
+                      @Override
+                      public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams p) {
+                          if (fileCb != null) fileCb.onReceiveValue(null);
+                          fileCb = cb;
+                          Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                          i.addCategory(Intent.CATEGORY_OPENABLE);
+                          i.setType("*/*");
+                          i.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{
+                              "application/pdf", "text/plain", "application/json", "application/msword",
+                              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                              "application/octet-stream"});
+                          try { startActivityForResult(Intent.createChooser(i, "เลือกไฟล์"), REQ_FILE); }
+                          catch (Exception e) { fileCb = null; return false; }
+                          return true;
+                      }
+                  });
+
+                  web.setDownloadListener((url, ua, cd, mime, len) -> {
+                      String name = URLUtil.guessFileName(url, cd, mime);
+                      if (url.startsWith("blob:")) {
+                          String js = "(async()=>{try{const r=await fetch(\"" + url + "\");const bl=await r.blob();"
+                              + "const fr=new FileReader();fr.onloadend=()=>AndroidSaver.save(fr.result.split(\",\")[1],"
+                              + "\"" + name.replace("\"", "") + "\",\"" + (mime == null ? "application/octet-stream" : mime) + "\");"
+                              + "fr.readAsDataURL(bl);}catch(e){AndroidSaver.fail(String(e));}})();";
+                          web.evaluateJavascript(js, null);
+                      }
+                  });
+
+                  web.loadUrl("file:///android_asset/index.html");
+              }
+
+              class Saver {
+                  @JavascriptInterface
+                  public void save(String b64, String name, String mime) {
+                      try {
+                          byte[] data = Base64.decode(b64, Base64.DEFAULT);
+                          ContentValues cv = new ContentValues();
+                          cv.put(MediaStore.Downloads.DISPLAY_NAME, name);
+                          cv.put(MediaStore.Downloads.MIME_TYPE, mime);
+                          cv.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                          Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+                          try (OutputStream os = getContentResolver().openOutputStream(uri)) { os.write(data); }
+                          runOnUiThread(() -> Toast.makeText(MainActivity.this, "บันทึกแล้วที่ Downloads/" + name, Toast.LENGTH_LONG).show());
+                      } catch (Exception e) { fail(String.valueOf(e)); }
+                  }
+                  @JavascriptInterface
+                  public void fail(String m) {
+                      runOnUiThread(() -> Toast.makeText(MainActivity.this, "บันทึกไฟล์ไม่สำเร็จ: " + m, Toast.LENGTH_LONG).show());
+                  }
+              }
+
+              @Override
+              protected void onActivityResult(int req, int res, Intent data) {
+                  if (req == REQ_FILE && fileCb != null) {
+                      Uri[] r = null;
+                      if (res == RESULT_OK && data != null) {
+                          if (data.getClipData() != null) {
+                              int n = data.getClipData().getItemCount();
+                              r = new Uri[n];
+                              for (int i = 0; i < n; i++) r[i] = data.getClipData().getItemAt(i).getUri();
+                          } else if (data.getData() != null) r = new Uri[]{data.getData()};
+                      }
+                      fileCb.onReceiveValue(r);
+                      fileCb = null;
+                  }
+              }
+
+              @Override
+              public void onBackPressed() {
+                  if (web.canGoBack()) web.goBack(); else super.onBackPressed();
+              }
+          }
+          EOF
+      - name: Build APK
+        working-directory: android-build
+        run: gradle assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DubbingHighlighter-apk
+          path: android-build/app/build/outputs/apk/debug/app-debug.apk
