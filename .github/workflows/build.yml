@@ -218,6 +218,17 @@ jobs:
               }
           }
           EOF
+          if [ -f icon.png ]; then
+            R=$P/app/src/main/res
+            rm -f $R/drawable/ic_fg.xml
+            sed -i 's|@drawable/ic_fg|@mipmap/ic_fg|' $R/mipmap-anydpi-v26/ic_launcher.xml
+            sed -i 's|#1D4ED8|#060402|' $R/values/styles.xml
+            for spec in mdpi:108:76 hdpi:162:113 xhdpi:216:151 xxhdpi:324:227 xxxhdpi:432:302; do
+              d=${spec%%:*}; r=${spec#*:}; full=${r%%:*}; art=${r##*:}
+              mkdir -p $R/mipmap-$d
+              convert icon.png -resize ${art}x${art} -background none -gravity center -extent ${full}x${full} PNG32:$R/mipmap-$d/ic_fg.png
+            done
+          fi
       - name: Build APK
         working-directory: android-build
         run: gradle assembleDebug --no-daemon
