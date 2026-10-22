@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Dubbing Highlighter — TEST22</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Thasadith:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--app-font:-apple-system,BlinkMacSystemFont,"Thonburi",sans-serif;--bg:#f4f6f8;--card:#fff;--ink:#16202a;--mut:#64707d;--line:#d9dfe5;--acc:#1d4ed8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme]){--bg:#0f151b;--card:#18212a;--ink:#e8edf2;--mut:#95a1ad;--line:#2b3742;--acc:#7aa2ff;color-scheme:dark}}
+/* 12 ชุดสีธีม: มืด 6 โทน + สว่าง 6 โทน */
+:root[data-theme="dark"],:root[data-theme="dark-graphite"]{--bg:#101319;--card:#191e27;--ink:#edf2f8;--mut:#9ba8b8;--line:#303846;--acc:#8baeff;color-scheme:dark;--glow:rgba(105,142,255,.14)}
+:root[data-theme="dark-ocean"]{--bg:#071923;--card:#0e2735;--ink:#e5f7ff;--mut:#8fb5c5;--line:#234454;--acc:#35c6e8;color-scheme:dark;--glow:rgba(53,198,232,.14)}
+:root[data-theme="dark-deep"]{--bg:#050505;--card:#121212;--ink:#f2f2f2;--mut:#9a9a9a;--line:#2a2a2a;--acc:#f5c451;color-scheme:dark;--glow:rgba(245,196,81,.14)}
+:root[data-theme="dark-warm"]{--bg:#1c1a17;--card:#26231f;--ink:#d9d3c5;--mut:#9b9487;--line:#3a362f;--acc:#c9a66b;color-scheme:dark;--glow:rgba(201,166,107,.12)}
+:root[data-theme="dark-mist"]{--bg:#1a1d21;--card:#23272c;--ink:#d3d8de;--mut:#8f98a1;--line:#353b42;--acc:#8fa9cf;color-scheme:dark;--glow:rgba(143,169,207,.12)}
+:root[data-theme="light"],:root[data-theme="light-cloud"]{--bg:#f3f6fb;--card:#ffffff;--ink:#172235;--mut:#68778d;--line:#dce4ef;--acc:#3868d9;color-scheme:light;--glow:rgba(56,104,217,.10)}
+:root[data-theme="light-rose"]{--bg:#fbf1f4;--card:#fffafd;--ink:#38232c;--mut:#8d6c79;--line:#eed9e1;--acc:#c44f7a;color-scheme:light;--glow:rgba(196,79,122,.11)}
+:root[data-theme="light-lavender"]{--bg:#f5f2fb;--card:#fff;--ink:#2b2440;--mut:#776b91;--line:#e2daf1;--acc:#8064cf;color-scheme:light;--glow:rgba(128,100,207,.12)}
+:root[data-theme="light-mint"]{--bg:#eef9f7;--card:#fbfffe;--ink:#193532;--mut:#668580;--line:#d1e9e4;--acc:#168b82;color-scheme:light;--glow:rgba(22,139,130,.12)}
+:root[data-theme="light-book"]{--bg:#f6efd6;--card:#fcf7e4;--ink:#3b3222;--mut:#857a62;--line:#e6dbb8;--acc:#a8741f;color-scheme:light;--glow:rgba(168,116,31,.12)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--app-font)}
+/* คงฟอนต์ UI เดิมไว้ และแยกฟอนต์บทพากย์ออกจาก UI */
+body,body *{font-family:var(--app-font)}
+button,input,textarea,select{font-family:inherit}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+main{position:relative;max-width:min(var(--w,1003px),100%);margin:0 auto;padding:0 14px 40px}
+h1{margin:12px 0 0;text-align:center;line-height:0;font-size:0}
+.statusbar{position:sticky;top:0;z-index:10;margin:0 0 10px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);box-shadow:0 2px 8px #00000012}
+.status-title{text-align:center;font-weight:700;font-size:15px;line-height:1.4;overflow-wrap:anywhere;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px 5px;color:var(--ink)}
+.status-metrics{display:flex;justify-content:space-between;gap:12px;font-size:12px;line-height:1.4;color:var(--mut);font-variant-numeric:tabular-nums}
+.progress-track{height:5px;margin-top:6px;border-radius:999px;overflow:hidden;background:var(--line)}
+.progress-fill{height:100%;width:0;background:var(--acc);border-radius:inherit;transition:width .12s linear}
+#out,#out *{font-family:var(--script-font,"CordiaUPC","Cordia New","Thasadith",sans-serif)!important}
+.sub{color:var(--mut);font-size:14px;margin:0 0 8px}
+.eprow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:2px}
+.eps{display:flex;gap:6px;flex:1;min-width:0;overflow-x:auto;padding:2px 0;scrollbar-width:thin}
+.ept{flex:none;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
+.ept[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg);font-weight:600}
+.ept{position:relative;padding-right:34px;display:inline-flex;align-items:center;gap:4px}.eptname{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.epx{position:absolute;right:3px;top:3px;width:24px;height:24px;display:grid;place-items:center;border:0;border-radius:6px;background:transparent;color:inherit;font:inherit;font-size:19px;font-weight:700;line-height:1;padding:0;cursor:pointer;z-index:2;touch-action:manipulation}.epx:hover,.epx:active{background:#dc2626;color:#fff}
+.importbar{display:flex;gap:8px;align-items:center;margin:8px 0;position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);padding:8px 0}.importbar .btn{flex:1;min-height:42px}
+#epbar{display:none!important}#p-edit{display:none!important}#drive{display:none!important}#drive.drive-open{display:none!important}
+#epAdd{flex:none;width:44px;height:44px;min-width:44px;padding:0;display:grid;place-items:center;border-radius:14px;white-space:nowrap;transition:transform .18s ease,box-shadow .18s ease,background .18s ease;box-shadow:0 3px 9px #00000018}
+#epAdd svg{width:27px;height:27px;display:block;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+#epAdd:hover{transform:translateY(-2px);box-shadow:0 6px 16px var(--glow)}
+#epAdd:active{transform:scale(.96)}
+.epbar{display:flex;gap:8px;margin:0 0 8px}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);display:flex;gap:6px;padding:8px 0}
+.tabs button{flex:1;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--acc);border-color:var(--acc);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+textarea{width:100%;min-height:52vh;resize:none;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);color:var(--ink);font:inherit;line-height:1.7}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.grp{margin-top:14px}
+.gl{font-size:13px;font-weight:700;color:var(--mut);margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:42px;padding:6px 16px;border:2px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);font:inherit;font-size:15px;cursor:pointer}
+.chip.on{border-color:transparent;color:#111;font-weight:700}
+.chip.act{box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--ink)}
+.mut{color:var(--mut);font-size:13px}
+.pal{margin-top:4px;padding:4px 6px;background:var(--bg);border-radius:6px}
+.pal b{display:block;margin-bottom:4px;font-size:11px}
+.sw{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.sw button{width:18px;height:18px;min-width:18px;min-height:18px;border-radius:50%;border:1px solid var(--line);padding:0;cursor:pointer;flex:0 0 18px}
+.sw button.on{border-color:var(--ink);box-shadow:inset 0 0 0 2px var(--bg)}
+.pal .row{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.pal .row:empty{display:none}
+.add{display:flex;gap:8px;margin-top:10px}
+.in{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--bg);color:var(--ink);font:inherit}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:10px;font-size:15px}
+.speech-reset-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.speech-reset-row .rzrow{display:flex;align-items:center;gap:10px}
+.font-size-reset-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+@media(max-width:640px){.speech-reset-row,.font-size-reset-row{gap:8px}}
+
+.opts label{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.opts input[type=checkbox]{width:20px;height:20px}
+.opts .in{flex:none;width:110px}
+#out{font-family:var(--app-font);line-height:1.5}
+.ln{padding:3px 8px;border-left:4px solid transparent;border-radius:6px;white-space:pre-wrap;min-height:1em;margin:2px 0;overflow-wrap:anywhere}
+.tag{display:inline-block;padding:0 5px;border-radius:5px;font-weight:700;margin:0;color:#111}
+mark{color:inherit;border-radius:3px;padding:0 2px}
+/* ลากขอบเพื่อปรับขนาด */
+.wgrip{position:absolute;top:0;bottom:0;width:14px;z-index:5;cursor:col-resize;touch-action:none;outline:none;-webkit-tap-highlight-color:transparent}
+.wgrip.l{left:0}.wgrip.r{right:0}
+.wgrip::before{content:"";display:block;position:sticky;top:calc(50vh - 30px);margin:0 auto;width:5px;height:60px;border-radius:3px;background:var(--line);transition:background .15s,width .15s}
+.hgrip{position:relative;height:18px;margin:-4px 0 10px;display:flex;align-items:center;justify-content:center;cursor:row-resize;touch-action:none;outline:none;-webkit-tap-highlight-color:transparent}
+.hgrip::before{content:"";width:64px;height:5px;border-radius:3px;background:var(--line);transition:background .15s,height .15s}
+.wgrip:hover::before,.wgrip:focus-visible::before,.wgrip.on::before,.hgrip:hover::before,.hgrip:focus-visible::before,.hgrip.on::before{background:var(--acc)}
+.wgrip:hover::before,.wgrip.on::before{width:7px}.hgrip:hover::before,.hgrip.on::before{height:7px}
+.rzlab{position:absolute;right:2px;top:50%;transform:translateY(-50%);font-size:12px;line-height:1;color:var(--mut);white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
+.hgrip.on .rzlab,.hgrip:hover .rzlab{color:var(--acc)}
+.rztip{position:fixed;left:0;top:0;z-index:60;pointer-events:none;visibility:hidden;opacity:0;transition:opacity .12s;background:var(--ink);color:var(--bg);border-radius:10px;padding:6px 12px 7px;box-shadow:0 4px 18px rgba(0,0,0,.35);text-align:center;line-height:1.25;white-space:nowrap}
+.rztip.on{visibility:visible;opacity:1}
+.rztip b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.rztip small{display:block;font-size:12px;opacity:.85}
+.rzrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#rzNow{font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums}
+body.dragging{user-select:none;-webkit-user-select:none}
+body.dragging.dw{cursor:col-resize}body.dragging.dh{cursor:row-resize}
+#out.fixed{overflow:auto}
+@media (max-width:640px){.wgrip{display:none}.rzlab .lw,.rzlab .sep{display:none}}
+/* Google Drive · สำรอง/กู้คืน */
+#drive{margin-top:14px}
+#drive>b{display:block}
+.dvhint{margin:6px 0 0;padding-left:18px}
+.dvhint li{margin:3px 0}
+#drive .bar{margin-top:10px}
+.dvmsg{margin-top:10px;font-size:14px;overflow-wrap:anywhere}
+.dvmsg:empty{display:none}
+.dvmsg.err{color:#b91c1c}
+@media (prefers-color-scheme:dark){:root[data-theme="dark"] .dvmsg.err{color:#fca5a5}}
+:root[data-theme="dark"] .dvmsg.err{color:#fca5a5}
+.dvbox{margin-top:10px;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:10px;font-size:14px}
+.dvbox p{margin:0 0 8px;overflow-wrap:anywhere}
+.dvbox .bar{margin-top:0}
+.btn.pri{background:var(--ink);border-color:var(--ink);color:var(--bg);font-weight:600}
+.btn:disabled{opacity:.55;cursor:default}
+.theme-controls{display:flex;gap:6px;align-items:center}
+.theme-btn{width:42px;height:42px;display:grid;place-items:center;padding:0;font-size:21px;border-radius:9px}
+.theme-btn[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:#fff;box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 28%,transparent)}
+/* Google Drive ผ่านตัวเชื่อมต่อของ Claude */
+.gdpanel{margin-top:10px;padding:10px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.gdhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.gdhead b{overflow-wrap:anywhere}
+.gdsearch{display:flex;gap:8px}
+.gdq{flex:1 1 auto;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--card);color:var(--ink);font:inherit;font-size:14px}
+.gdstat{margin-top:8px;overflow-wrap:anywhere}
+.gdstat:empty{display:none}
+.gdstat.err{color:#b91c1c}
+@media (prefers-color-scheme:dark){:root[data-theme="dark"] .gdstat.err{color:#fca5a5}}
+:root[data-theme="dark"] .gdstat.err{color:#fca5a5}
+.gdlist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:min(60vh,420px);overflow:auto}
+.gdlist:empty{display:none}
+.gdrow{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.gdrow .t{font-weight:600;overflow-wrap:anywhere}
+.gdrow .m{font-size:12.5px;color:var(--mut)}
+.gdrow:disabled{opacity:.55;cursor:default}
+.gdlocal{margin:12px 0 0}
+.gdnote{margin:10px 0 0}
+.dvmsg a{color:var(--acc)}
+/* แถบค้นหาคำแบบติดขอบล่างของหน้าจอ */
+.qbar{position:fixed;left:0;right:0;bottom:0;z-index:50;margin:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--line);box-shadow:0 -5px 18px rgba(0,0,0,.18);box-sizing:border-box}
+.qbar.on{position:fixed;top:auto;bottom:0;z-index:50}
+.qbar .qrow{max-width:1100px;margin:0 auto}
+body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+.qrow{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.qrow .in{background:var(--card);min-height:42px;-webkit-appearance:none;appearance:none}
+.qrow .in::-webkit-search-cancel-button{display:none}
+.qb{flex:none;min-width:42px;min-height:42px;padding:0 8px;font-size:15px;line-height:1}
+.qcnt{flex:none;min-width:2.6em;text-align:center;font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
+.qcnt:empty{display:none}
+.qmore{margin-top:6px;font-size:14px;gap:4px 12px}
+.qmore label{display:flex;align-items:center;gap:8px}
+.qmore input{width:20px;height:20px}
+.qoth{margin:0 0 8px;line-height:2}
+.qoth:empty{display:none}
+.qoth .btn{margin:0 6px 0 0;padding:2px 10px}
+mark.hit{background:var(--ink);color:var(--bg);border-radius:4px;padding:0 2px}
+mark.hit.cur{outline:3px solid var(--acc);outline-offset:1px}
+.ln.flt{cursor:pointer}
+.lno{display:inline-block;min-width:2.4em;margin-right:6px;font-family:var(--app-font);font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums}
+.chip[data-c]::after{content:attr(data-c);margin-left:8px;font-size:12px;font-weight:400;opacity:.65}
+[hidden]{display:none!important}
+/* บรรทัดต่อเนื่องของบทพูด: ป้ายสีของตัวละครเดิม (ลูกศร ↳ วาดด้วย CSS จึงไม่ติดไปตอนคัดลอก) */
+.ctm{display:inline-block;margin-right:5px;padding:0 5px;border-radius:5px;font-weight:700;color:#111;background:var(--c);user-select:none;-webkit-user-select:none}
+.ctm::before{content:""}
+.gdsrcs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
+.gdsrcs button{flex:1 1 auto;padding:6px 5px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;font:inherit;font-size:13.5px;white-space:nowrap;cursor:pointer}
+.gdsrcs button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg);font-weight:600}
+.gdcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin:0 0 8px;font-size:14px}
+.gdcrumb[hidden]{display:none}
+.gdcrumb b{overflow-wrap:anywhere}
+.gdcb{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:2px 10px;font:inherit;font-size:13px;cursor:pointer}
+.gdsep{color:var(--mut)}
+.gdopt{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-top:8px;font-size:14px}
+.gdopt label{display:flex;gap:6px;align-items:center}
+.gdopt label[hidden]{display:none}
+.gdopt select{border:1px solid var(--line);border-radius:8px;padding:3px 6px;background:var(--card);color:var(--ink);font:inherit;font-size:14px}
+.gdrow.fold .t::before{content:"";display:inline-block;width:17px;height:13px;margin-right:7px;vertical-align:-1px;background:currentColor;opacity:.65;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M1 2.5A1.5 1.5 0 0 1 2.5 1h4.2c.4 0 .8.2 1.1.5L9.3 3h8.2A1.5 1.5 0 0 1 19 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 1 13.5z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M1 2.5A1.5 1.5 0 0 1 2.5 1h4.2c.4 0 .8.2 1.1.5L9.3 3h8.2A1.5 1.5 0 0 1 19 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 1 13.5z'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* ฟอนต์บทพากย์: แยกจากฟอนต์ UI อย่างชัดเจน */
+:root{--script-font:"CordiaUPC","Cordia New","Thasadith",sans-serif}
+.script-font-label{display:block;color:var(--mut);font-size:12px;font-weight:600;margin:4px 0 6px}
+.script-font-select{display:block;width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:14px;outline-offset:2px}
+.script-font-note{margin:7px 0 0;color:var(--mut);font-size:11px;line-height:1.5}
+/* Modern glass-like UI, subtle depth and responsive theme palette */
+:root{--radius-xl:18px;--shadow-card:0 8px 24px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04);--glow:rgba(56,104,217,.10)}
+body{background:radial-gradient(ellipse at 10% 0%,var(--glow),transparent 36%),var(--bg);transition:background-color .22s,color .22s}
+main{padding-left:clamp(12px,2vw,22px);padding-right:clamp(12px,2vw,22px)}
+.statusbar,.card{border-radius:var(--radius-xl);box-shadow:var(--shadow-card);border-color:color-mix(in srgb,var(--line) 78%,transparent);backdrop-filter:blur(12px)}
+.statusbar{padding:12px 16px;background:color-mix(in srgb,var(--card) 94%,transparent)}
+.status-title{font-size:16px;letter-spacing:.01em}
+.progress-track{height:6px;background:color-mix(in srgb,var(--line) 72%,var(--bg))}
+.progress-fill{background:linear-gradient(90deg,var(--acc),color-mix(in srgb,var(--acc) 55%,white));box-shadow:0 0 12px var(--glow)}
+.card{padding:clamp(12px,2vw,18px);margin-bottom:14px}
+.btn,.ept,.tabs button,.gdrow,.gdsrcs button,.chip,.theme-btn{transition:background .18s,border-color .18s,color .18s,box-shadow .18s,transform .18s}
+.btn{border-radius:11px;padding:8px 13px}
+.btn:hover,.tabs button:hover,.gdsrcs button:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(0,0,0,.08)}
+.btn.pri{background:linear-gradient(135deg,var(--acc),color-mix(in srgb,var(--acc) 72%,#25304a));border-color:transparent;color:#fff;box-shadow:0 5px 14px var(--glow)}
+textarea,.in,.gdq,.qrow .in{border-radius:12px;transition:border-color .18s,box-shadow .18s}
+textarea:focus,.in:focus,.gdq:focus,.qrow .in:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--glow);outline:none}
+.ept{border-radius:11px;box-shadow:0 2px 5px rgba(0,0,0,.035)}
+.ept[aria-selected="true"]{background:var(--acc);border-color:var(--acc);color:#fff;box-shadow:0 4px 12px var(--glow)}
+.theme-controls{gap:7px;flex-wrap:wrap}
+.theme-btn{width:42px;height:42px;border-radius:12px;background:var(--card);box-shadow:0 2px 7px rgba(0,0,0,.05)}
+.theme-btn[aria-pressed="true"]{background:var(--acc);color:#fff}
+.theme-palette{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:9px 11px;margin:8px 0 12px;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--card) 92%,transparent);box-shadow:var(--shadow-card)}
+.theme-palette[hidden]{display:none!important}
+.theme-palette .palette-label{font-size:12px;color:var(--mut);font-weight:700;margin-right:2px}
+.customize-btn{width:42px;min-width:42px;height:42px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;font-size:0}
+.customize-btn svg{width:21px;height:21px;display:block;stroke:currentColor;transition:transform .2s ease,stroke .2s ease}
+.customize-btn:hover svg{transform:rotate(-8deg) scale(1.06)}
+.customize-btn:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+.palette-section{width:100%;min-width:0}.palette-section+.palette-section{border-top:1px solid var(--line);padding-top:10px;margin-top:4px}.palette-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 7px;color:var(--ink);font-size:13px;font-weight:700}.palette-heading small{color:var(--mut);font-size:11px;font-weight:500}.palette-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.palette-options .theme-swatch{min-width:0;justify-content:flex-start;font-size:12px;white-space:nowrap}
+@media(max-width:480px){.palette-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.theme-swatch{display:flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
+.theme-swatch .dot{width:15px;height:15px;border-radius:50%;border:1px solid #ffffff70;box-shadow:inset 0 0 0 1px #00000012;flex:none}
+.theme-swatch[aria-pressed="true"]{border-color:var(--acc);box-shadow:0 0 0 2px var(--glow);font-weight:700}
+.theme-swatch:hover{transform:translateY(-1px)}
+.qbar{background:color-mix(in srgb,var(--card) 95%,transparent);backdrop-filter:blur(16px);border-top-color:var(--line)}
+@media(max-width:640px){.eprow{gap:7px}.theme-controls{gap:5px}.theme-btn{width:38px;height:38px}.theme-palette{gap:6px}.theme-swatch{padding:6px 8px}}
+
+
+/* UI layout presets: the selected layout changes the app's visual structure, not just its colors. */
+.layout-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.layout-choice{min-width:0;display:flex;flex-direction:column;gap:5px;text-align:left;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
+.layout-choice:hover{transform:translateY(-2px)}
+.layout-choice[aria-pressed="true"]{border-color:var(--acc);box-shadow:0 0 0 2px var(--glow);background:color-mix(in srgb,var(--card) 88%,var(--acc))}
+.layout-name{font-size:12px;font-weight:750;line-height:1.35}.layout-choice small{font-size:10px;line-height:1.3;color:var(--mut)}
+.layout-preview{height:47px;width:100%;display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:7px;overflow:hidden;position:relative}
+.layout-preview i,.layout-preview b{display:block;border-radius:3px;height:6px}
+.layout-preview i:first-child{width:70%}.layout-preview i:nth-child(2){width:92%}.layout-preview b{width:48%;height:12px;margin-top:2px}
+.classic-preview{background:var(--bg);border:1px solid var(--line)}.classic-preview i{background:var(--line)}.classic-preview b{background:var(--acc)}
+.studio-preview{background:#101827;border:1px solid #34445e}.studio-preview i{background:#334155}.studio-preview b{background:#60a5fa}
+.focus-preview{background:#f8fafc;border:1px solid #dbe4ee;padding:8px 10px}.focus-preview i{background:#cbd5e1;height:4px}.focus-preview b{background:#64748b;height:5px}
+.glass-preview{background:linear-gradient(135deg,#7c8cf8,#50c8bd);border:1px solid #ffffff80}.glass-preview i{background:#ffffffb8}.glass-preview b{background:#ffffffed}
+.compact-preview{background:#20252e;border:1px solid #414957;padding:4px;gap:3px}.compact-preview i{height:4px;background:#626f80}.compact-preview b{height:8px;background:#a5b4fc;margin-top:0}
+
+.neon-preview{background:#0b1020;border:1px solid #334155;box-shadow:inset 0 0 12px #7c3aed40}.neon-preview i{background:#475569}.neon-preview b{background:#22d3ee;box-shadow:0 0 8px #22d3ee}
+.editorial-preview{background:#faf7f0;border:1px solid #ded5c7;border-radius:3px}.editorial-preview i{background:#d6cbbb;border-radius:1px}.editorial-preview b{background:#b45336;border-radius:1px}
+.aurora-preview{background:linear-gradient(130deg,#14213d,#365a7d 48%,#3a8d83);border:1px solid #7dd3c7}.aurora-preview i{background:#ffffffa8}.aurora-preview b{background:linear-gradient(90deg,#a7f3d0,#c4b5fd)}
+.soft-preview{background:#f0f4f8;border:1px solid #d9e2ec;border-radius:12px}.soft-preview i{background:#d4deea;border-radius:8px}.soft-preview b{background:#8ba7c7;border-radius:8px}
+.command-preview{background:#111827;border:1px solid #475569;border-radius:5px;padding:4px;gap:3px}.command-preview i{background:#374151;height:4px;border-radius:1px}.command-preview b{background:#a3e635;height:8px;border-radius:2px;margin-top:0}
+
+/* คลาสสิค: รูปแบบดั้งเดิม เรียบตรง ลดเอฟเฟกต์ */
+:root[data-layout="classic"]{--radius-xl:12px;--shadow-card:0 2px 8px #00000012;--glow:rgba(100,116,139,.08)}
+:root[data-layout="classic"] body{background:var(--bg)}
+:root[data-layout="classic"] .statusbar,:root[data-layout="classic"] .card{backdrop-filter:none;box-shadow:var(--shadow-card);border-radius:12px}
+:root[data-layout="classic"] .statusbar{padding:8px 12px}
+:root[data-layout="classic"] .card{padding:12px;margin-bottom:12px}
+:root[data-layout="classic"] .btn{border-radius:8px;box-shadow:none}
+:root[data-layout="classic"] .btn.pri{background:var(--acc);box-shadow:none}
+:root[data-layout="classic"] .ept{border-radius:8px;box-shadow:none}
+:root[data-layout="classic"] textarea,:root[data-layout="classic"] .in,:root[data-layout="classic"] .gdq{border-radius:8px;box-shadow:none}
+/* สตูดิโอ: แถบสถานะชัดเจนและขอบคมแบบซอฟต์แวร์ทำงาน */
+:root[data-layout="studio"]{--radius-xl:10px;--shadow-card:0 7px 18px rgba(0,0,0,.13)}
+:root[data-layout="studio"] body{background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 5%,var(--bg)),var(--bg) 280px)}
+:root[data-layout="studio"] .statusbar{border-left:4px solid var(--acc);border-radius:10px;padding:13px 16px}
+:root[data-layout="studio"] .card{border-radius:10px;border-top:2px solid color-mix(in srgb,var(--acc) 55%,var(--line))}
+:root[data-layout="studio"] .btn,:root[data-layout="studio"] .ept,:root[data-layout="studio"] textarea,:root[data-layout="studio"] .in{border-radius:7px}
+:root[data-layout="studio"] .progress-track{height:4px;border-radius:3px}
+/* โฟกัส: พื้นที่บทอ่านง่าย โล่ง และลดการตกแต่งที่รบกวนสายตา */
+:root[data-layout="focus"]{--radius-xl:14px;--shadow-card:0 2px 7px rgba(15,23,42,.035)}
+:root[data-layout="focus"] body{background:var(--bg)}
+:root[data-layout="focus"] main{max-width:min(900px,100%)}
+:root[data-layout="focus"] .statusbar{box-shadow:none;border-color:transparent;border-bottom:1px solid var(--line);border-radius:0;background:transparent;padding:10px 8px}
+:root[data-layout="focus"] .card{box-shadow:none;border-color:color-mix(in srgb,var(--line) 72%,transparent);padding:clamp(16px,3vw,26px)}
+:root[data-layout="focus"] #out{line-height:1.8;letter-spacing:.012em}
+:root[data-layout="focus"] .ln{padding:5px 10px;margin:4px 0;border-radius:4px}
+:root[data-layout="focus"] .btn{box-shadow:none}
+/* กลาส: การ์ดโปร่งแสงและแสงไล่ระดับ */
+:root[data-layout="glass"]{--radius-xl:22px;--shadow-card:0 12px 34px rgba(0,0,0,.11),inset 0 1px 0 rgba(255,255,255,.12)}
+:root[data-layout="glass"] body{background:radial-gradient(ellipse at 0% 0%,var(--glow),transparent 38%),radial-gradient(ellipse at 100% 12%,color-mix(in srgb,var(--acc) 10%,transparent),transparent 34%),var(--bg)}
+:root[data-layout="glass"] .statusbar,:root[data-layout="glass"] .card,:root[data-layout="glass"] .theme-palette{backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);background:color-mix(in srgb,var(--card) 82%,transparent);border-color:color-mix(in srgb,var(--line) 68%,transparent);box-shadow:var(--shadow-card);border-radius:22px}
+:root[data-layout="glass"] .btn,:root[data-layout="glass"] .ept,:root[data-layout="glass"] .in,:root[data-layout="glass"] textarea{border-radius:14px}
+:root[data-layout="glass"] .btn.pri{box-shadow:0 8px 20px var(--glow)}
+/* คอมแพค: ลดระยะห่าง เพิ่มพื้นที่ใช้งานจริง โดยยังคงเป้าสัมผัสที่เหมาะกับมือถือ */
+:root[data-layout="compact"]{--radius-xl:10px;--shadow-card:0 3px 10px rgba(0,0,0,.06)}
+:root[data-layout="compact"] main{padding-left:10px;padding-right:10px}
+:root[data-layout="compact"] .statusbar{padding:7px 10px;margin-bottom:7px;border-radius:10px}
+:root[data-layout="compact"] .status-title{font-size:14px;padding-bottom:3px}
+:root[data-layout="compact"] .progress-track{margin-top:4px;height:4px}
+:root[data-layout="compact"] .card{padding:9px;margin-bottom:8px;border-radius:10px}
+:root[data-layout="compact"] .eprow{gap:5px}
+:root[data-layout="compact"] .btn{padding:6px 9px;border-radius:8px}
+:root[data-layout="compact"] .eps{gap:4px}
+:root[data-layout="compact"] .ept{padding:5px 28px 5px 9px;border-radius:8px}
+:root[data-layout="compact"] .ln{padding:2px 6px;margin:1px 0}
+:root[data-layout="compact"] .grp{margin-top:9px}
+:root[data-layout="compact"] .opts{gap:5px;margin-top:7px}
+
+/* นีออน: คอนทราสต์สูงพร้อมแสงเน้นเฉพาะจุด */
+:root[data-layout="neon"]{--radius-xl:16px;--shadow-card:0 0 0 1px color-mix(in srgb,var(--acc) 20%,transparent),0 10px 28px rgba(0,0,0,.18)}
+:root[data-layout="neon"] body{background:radial-gradient(ellipse at 10% 0%,color-mix(in srgb,var(--acc) 17%,transparent),transparent 38%),var(--bg)}
+:root[data-layout="neon"] .statusbar,:root[data-layout="neon"] .card{border-color:color-mix(in srgb,var(--acc) 28%,var(--line));box-shadow:var(--shadow-card)}
+:root[data-layout="neon"] .btn.pri,:root[data-layout="neon"] .progress-fill{box-shadow:0 0 16px var(--glow),0 4px 12px var(--glow)}
+:root[data-layout="neon"] .ept[aria-selected="true"]{box-shadow:0 0 0 1px var(--acc),0 0 14px var(--glow)}
+/* เอดิทอเรียล: ลำดับชั้นตัวอักษรชัดเจน คล้ายหน้ากระดาษที่ออกแบบอย่างประณีต */
+:root[data-layout="editorial"]{--radius-xl:8px;--shadow-card:0 2px 5px rgba(30,41,59,.035)}
+:root[data-layout="editorial"] body{background:var(--bg)}
+:root[data-layout="editorial"] .statusbar,:root[data-layout="editorial"] .card{border-radius:8px;box-shadow:none;border-color:var(--line)}
+:root[data-layout="editorial"] .status-title{letter-spacing:.025em;font-weight:800}
+:root[data-layout="editorial"] .card{border-top:2px solid var(--acc)}
+:root[data-layout="editorial"] .btn,:root[data-layout="editorial"] .ept{border-radius:5px}
+:root[data-layout="editorial"] #out{line-height:1.75}
+/* ออโรรา: พื้นหลังไล่เฉดหลายชั้นและการ์ดนุ่มนวล */
+:root[data-layout="aurora"]{--radius-xl:20px;--shadow-card:0 12px 30px rgba(15,23,42,.09)}
+:root[data-layout="aurora"] body{background:radial-gradient(ellipse at 0% 0%,color-mix(in srgb,#8b5cf6 12%,transparent),transparent 35%),radial-gradient(ellipse at 100% 8%,color-mix(in srgb,#14b8a6 12%,transparent),transparent 34%),var(--bg)}
+:root[data-layout="aurora"] .statusbar,:root[data-layout="aurora"] .card{border-radius:20px;box-shadow:var(--shadow-card)}
+:root[data-layout="aurora"] .btn.pri{background:linear-gradient(120deg,var(--acc),color-mix(in srgb,var(--acc) 45%,#14b8a6));border-color:transparent}
+:root[data-layout="aurora"] .progress-fill{background:linear-gradient(90deg,var(--acc),#14b8a6,#a78bfa)}
+/* ซอฟต์ทัช: มุมโค้งและเงากระจายบาง ๆ ลดความแข็งขององค์ประกอบ */
+:root[data-layout="soft-touch"]{--radius-xl:24px;--shadow-card:0 6px 22px rgba(70,85,105,.08)}
+:root[data-layout="soft-touch"] body{background:color-mix(in srgb,var(--bg) 96%,var(--acc))}
+:root[data-layout="soft-touch"] .statusbar,:root[data-layout="soft-touch"] .card{border-radius:24px;box-shadow:var(--shadow-card);border-color:color-mix(in srgb,var(--line) 65%,transparent)}
+:root[data-layout="soft-touch"] .btn,:root[data-layout="soft-touch"] .ept,:root[data-layout="soft-touch"] .in,:root[data-layout="soft-touch"] textarea{border-radius:15px}
+:root[data-layout="soft-touch"] .btn.pri{box-shadow:0 5px 14px var(--glow)}
+/* คอมมานด์: เส้นแบ่งชัดเจนและองค์ประกอบแน่นแบบแผงควบคุม */
+:root[data-layout="command"]{--radius-xl:9px;--shadow-card:0 4px 12px rgba(0,0,0,.09)}
+:root[data-layout="command"] body{background:var(--bg)}
+:root[data-layout="command"] .statusbar{border-left:4px solid var(--acc);border-radius:8px;padding:10px 13px}
+:root[data-layout="command"] .card{border-radius:9px;border-top:1px solid var(--line);box-shadow:var(--shadow-card)}
+:root[data-layout="command"] .btn,:root[data-layout="command"] .ept{border-radius:6px;font-weight:600}
+:root[data-layout="command"] .progress-track{height:5px}
+
+@media(max-width:700px){.layout-options{grid-template-columns:repeat(3,minmax(0,1fr))}.layout-choice{padding:7px}.layout-preview{height:42px}}
+@media(max-width:390px){.layout-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+</style>
+<script>
+// โหลดธีมที่ผู้ใช้เลือกไว้ล่าสุด
+try { const savedTheme=localStorage.getItem('dub-highlighter-theme'); if(savedTheme&&['dark','dark-graphite','dark-ocean','dark-deep','dark-warm','dark-mist','light','light-cloud','light-rose','light-lavender','light-mint','light-book'].indexOf(savedTheme)>-1) document.documentElement.setAttribute('data-theme',savedTheme); } catch (e) {}
+</script>
+</head>
+<body>
+<main>
+<section class="statusbar" id="statusbar" aria-label="สถานะบทพากย์">
+  <div class="status-title" id="statusTitle">ยังไม่มีบท</div>
+  <div class="status-metrics"><span id="progressLabel">ความคืบหน้า 0%</span><span id="remainingLabel">เหลือ 0 บรรทัด</span></div>
+  <div class="progress-track" role="progressbar" id="progressTrack" aria-label="ความคืบหน้าของบท" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progressFill"></div></div>
+</section>
+  <div class="eprow">
+    <div class="eps" id="eps" role="tablist" aria-label="บทที่เปิดไว้"></div>
+    <button class="btn pri" id="epAdd" type="button" title="เพิ่มบท" aria-label="เพิ่มบท"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M6.5 3.8h9l5 5v7.1M15.5 3.8v5h5"/><path d="M6.5 3.8a2 2 0 0 0-2 2v16.4a2 2 0 0 0 2 2h7.2"/><path d="M8 13h7M8 17h5"/><circle cx="20" cy="20" r="5.2" fill="var(--acc)" stroke="var(--acc)"/><path d="M20 17.3v5.4M17.3 20h5.4" stroke="var(--bg)" stroke-width="1.9"/></svg></button>
+    <button class="btn theme-btn customize-btn" id="paletteToggle" type="button" aria-expanded="false" aria-controls="themePalette" title="ปรับแต่ง" aria-label="ปรับแต่ง"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/><path d="M12 3v2M12 19v2" opacity=".35"/></svg></button>
+  </div>
+  <section class="theme-palette" id="themePalette" hidden aria-label="ปรับแต่งธีมและโทนสี">
+    <div class="palette-section"><div class="palette-heading"><span>🌙 โหมดมืด</span><small>5 โทนสี</small></div><div class="palette-options">
+      <button class="theme-swatch" type="button" data-theme-choice="dark-graphite" aria-pressed="false"><span class="dot" style="background:#101319"></span>กราไฟต์</button>
+      <button class="theme-swatch" type="button" data-theme-choice="dark-ocean" aria-pressed="false"><span class="dot" style="background:#071923"></span>มหาสมุทร</button>
+      <button class="theme-swatch" type="button" data-theme-choice="dark-deep" aria-pressed="false"><span class="dot" style="background:#050505"></span>สีเข้ม</button>
+      <button class="theme-swatch" type="button" data-theme-choice="dark-warm" aria-pressed="false"><span class="dot" style="background:#1c1a17"></span>ถ่านอุ่น</button>
+      <button class="theme-swatch" type="button" data-theme-choice="dark-mist" aria-pressed="false"><span class="dot" style="background:#1a1d21"></span>เทาหม่น</button>
+    </div></div>
+    <div class="palette-section"><div class="palette-heading"><span>☀️ โหมดสว่าง</span><small>5 โทนสี</small></div><div class="palette-options">
+      <button class="theme-swatch" type="button" data-theme-choice="light-cloud" aria-pressed="false"><span class="dot" style="background:#f3f6fb"></span>คลาวด์</button>
+      <button class="theme-swatch" type="button" data-theme-choice="light-rose" aria-pressed="false"><span class="dot" style="background:#fbf1f4"></span>โรส</button>
+      <button class="theme-swatch" type="button" data-theme-choice="light-lavender" aria-pressed="false"><span class="dot" style="background:#f5f2fb"></span>ลาเวนเดอร์</button>
+      <button class="theme-swatch" type="button" data-theme-choice="light-mint" aria-pressed="false"><span class="dot" style="background:#eef9f7"></span>มิ้นต์</button>
+      <button class="theme-swatch" type="button" data-theme-choice="light-book" aria-pressed="false"><span class="dot" style="background:#f6efd6"></span>หนังสือ</button>
+    </div></div>
+    <div class="palette-section layout-section">
+      <div class="palette-heading"><span>🧩 รูปแบบหน้าตาแอป</span><small>เลือกได้ 10 แบบ</small></div>
+      <div class="layout-options">
+        <button class="layout-choice" type="button" data-layout-choice="classic" aria-pressed="true"><span class="layout-preview classic-preview"><i></i><i></i><b></b></span><span class="layout-name">คลาสสิค</span><small>รูปแบบดั้งเดิม</small></button>
+        <button class="layout-choice" type="button" data-layout-choice="studio" aria-pressed="false"><span class="layout-preview studio-preview"><i></i><i></i><b></b></span><span class="layout-name">สตูดิโอ</span><small>มืออาชีพ คมชัด</small></button>
+        <button class="layout-choice" type="button" data-layout-choice="focus" aria-pressed="false"><span class="layout-preview focus-preview"><i></i><i></i><b></b></span><span class="layout-name">โฟกัส</span><small>เน้นอ่านบทพากย์</small></button>
+        <button class="layout-choice" type="button" data-layout-choice="glass" aria-pressed="false"><span class="layout-preview glass-preview"><i></i><i></i><b></b></span><span class="layout-name">กลาส</span><small>โปร่งใส มีมิติ</small></button>
+        <button class="layout-choice" type="button" data-layout-choice="compact" aria-pressed="false"><span class="layout-preview compact-preview"><i></i><i></i><b></b></span><span class="layout-name">คอมแพค</span><small>กระชับ ใช้พื้นที่คุ้ม</small></button>
+        <button class="layout-choice" type="button" data-layout-choice="neon" aria-pressed="false"><span class="layout-preview neon-preview"><i></i><i></i><b></b></span><span class="layout-name">นีออน</span><small>ล้ำสมัย แสงเรือง</small></button>
+        <button class="layout-choice" type="button" data-layout-choice="editorial" aria-pressed="false"><span class="layout-preview editorial-preview"><i></i><i></i><b></b></span><span class="layout-name">เอดิทอเรียล</span><small>ตัวอักษรเด่น เป็นระเบียบ</small></button>
+        <button class="layout-choice" type="button" data-layout-choice="aurora" aria-pressed="false"><span class="layout-preview aurora-preview"><i></i><i></i><b></b></span><span class="layout-name">ออโรรา</span><small>ไล่เฉดสีมีชีวิตชีวา</small></button>
+        <button class="layout-choice" type="button" data-layout-choice="soft-touch" aria-pressed="false"><span class="layout-preview soft-preview"><i></i><i></i><b></b></span><span class="layout-name">ซอฟต์ทัช</span><small>นุ่มนวล สบายตา</small></button>
+        <button class="layout-choice" type="button" data-layout-choice="command" aria-pressed="false"><span class="layout-preview command-preview"><i></i><i></i><b></b></span><span class="layout-name">คอมมานด์</span><small>แผงควบคุมมืออาชีพ</small></button>
+      </div>
+    </div>
+    <div class="palette-section script-font-section">
+      <div class="palette-heading"><span>Aa ปรับแต่งตัวหนังสือ</span><small>เปลี่ยนเฉพาะบทพากย์</small></div>
+      <label class="script-font-label" for="scriptFontSelect">เลือกฟอนต์ที่ใช้แสดงบทพากย์</label>
+      <select id="scriptFontSelect" class="script-font-select" aria-label="เลือกฟอนต์บทพากย์">
+        <option value="thonburi">Thonburi</option>
+        <option value="sarabun">Sarabun / TH Sarabun</option>
+        <option value="cordia">CordiaUPC</option>
+      </select>
+      <p class="script-font-note">การตั้งค่านี้มีผลเฉพาะข้อความบทพากย์เท่านั้น ฟอนต์ของเมนู ปุ่ม และ UI จะคงเดิม</p>
+    </div>
+  </section>
+<script>
+(function () {
+  const root = document.documentElement;
+  const palette=document.getElementById('themePalette');
+  const paletteToggle=document.getElementById('paletteToggle');
+  function refresh() {
+    const theme = root.getAttribute('data-theme') || 'dark-graphite';
+    document.querySelectorAll('[data-theme-choice]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.themeChoice===theme)));
+  }
+  function applyTheme(theme) {
+    root.setAttribute('data-theme',theme);
+    try { localStorage.setItem('dub-highlighter-theme',theme); } catch (e) {}
+    refresh();
+  }
+  if(paletteToggle&&palette){
+    paletteToggle.addEventListener('click',()=>{
+      palette.hidden=!palette.hidden;
+      paletteToggle.setAttribute('aria-expanded',String(!palette.hidden));
+    });
+  }
+  document.querySelectorAll('[data-theme-choice]').forEach(b=>b.addEventListener('click',()=>applyTheme(b.dataset.themeChoice)));
+  const scriptFontSelect=document.getElementById('scriptFontSelect');
+  const scriptFontStacks={
+    thonburi:'"Thonburi", "Noto Sans Thai", sans-serif',
+    sarabun:'"Sarabun", "TH Sarabun New", "TH SarabunPSK", sans-serif',
+    cordia:'"CordiaUPC", "Cordia New", "Thasadith", sans-serif'
+  };
+  function applyScriptFont(font){
+    if(!Object.prototype.hasOwnProperty.call(scriptFontStacks,font)) font='cordia';
+    root.style.setProperty('--script-font',scriptFontStacks[font]);
+    if(scriptFontSelect) scriptFontSelect.value=font;
+    try { localStorage.setItem('dub-highlighter-script-font',font); } catch(e) {}
+  }
+  let savedScriptFont='cordia';
+  try { savedScriptFont=localStorage.getItem('dub-highlighter-script-font')||'cordia'; } catch(e) {}
+  applyScriptFont(savedScriptFont);
+  if(scriptFontSelect) scriptFontSelect.addEventListener('change',()=>applyScriptFont(scriptFontSelect.value));
+  function refreshLayout(){
+    const layout=root.getAttribute('data-layout')||'classic';
+    document.querySelectorAll('[data-layout-choice]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.layoutChoice===layout)));
+  }
+  function applyLayout(layout){
+    root.setAttribute('data-layout',layout);
+    try { localStorage.setItem('dub-highlighter-layout',layout); } catch(e) {}
+    refreshLayout();
+  }
+  try { const savedLayout=localStorage.getItem('dub-highlighter-layout'); if(savedLayout && ['classic','studio','focus','glass','compact','neon','editorial','aurora','soft-touch','command'].includes(savedLayout)) root.setAttribute('data-layout',savedLayout); else root.setAttribute('data-layout','classic'); } catch(e) { root.setAttribute('data-layout','classic'); }
+  document.querySelectorAll('[data-layout-choice]').forEach(b=>b.addEventListener('click',()=>applyLayout(b.dataset.layoutChoice)));
+  refreshLayout();
+  refresh();
+})();
+</script>
+  <input type="file" id="file" accept=".docx,.doc,.txt,.pdf,application/pdf,application/msword,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+
+    <div class="card" id="drive">
+      <b>Google Drive</b>
+      <ul class="mut dvhint" id="dvHint"></ul>
+      <p class="mut gdnote" id="gdNote" hidden>หน้านี้ยังไม่ได้รับอนุญาตให้ใช้ Google Drive ผ่าน Claude <button class="btn" id="gdPerm" type="button">เปิดการตั้งค่าสิทธิ์</button></p>
+      <div id="gd" hidden>
+        <div class="bar">
+          <button class="btn pri" id="gdOpen" type="button">เปิดบทจาก Google Drive</button>
+          <button class="btn" id="gdSave" type="button">บันทึกสำรองลง Google Drive</button>
+          <button class="btn" id="gdRestore" type="button">กู้คืนจาก Google Drive</button>
+        </div>
+        <div class="gdpanel" id="gdPanel" hidden>
+          <div class="gdhead"><b id="gdTitle"></b><button class="btn" id="gdClose" type="button">ปิด</button></div>
+          <div class="gdsrcs" id="gdSrcs" role="tablist" aria-label="แหล่งไฟล์ใน Google Drive">
+            <button type="button" role="tab" data-s="recent" aria-selected="true">ล่าสุด</button>
+            <button type="button" role="tab" data-s="starred" aria-selected="false">ติดดาว</button>
+            <button type="button" role="tab" data-s="mine" aria-selected="false">ไดรฟ์ของฉัน</button>
+            <button type="button" role="tab" data-s="shared" aria-selected="false">แชร์กับฉัน</button>
+          </div>
+          <div class="gdcrumb" id="gdCrumb" hidden></div>
+          <div class="gdsearch">
+            <input class="gdq" id="gdQ" type="search" maxlength="100" placeholder="ค้นหาจากชื่อไฟล์" aria-label="ค้นหาไฟล์ใน Google Drive" autocomplete="off" enterkeyhint="search">
+            <button class="btn" id="gdGo" type="button">ค้นหา</button>
+          </div>
+          <div class="gdopt">
+            <label id="gdSortWrap">เรียงตาม <select id="gdSort" aria-label="เรียงรายการตาม"><option value="name">ชื่อ</option><option value="time">แก้ไขล่าสุด</option></select></label>
+            <label><input type="checkbox" id="gdAll"> แสดงไฟล์ชนิดอื่นด้วย</label>
+          </div>
+          <div class="mut gdstat" id="gdStat" role="status" aria-live="polite"></div>
+          <ul class="gdlist" id="gdList"></ul>
+          <div class="bar"><button class="btn" id="gdMore" type="button" hidden>แสดงเพิ่ม</button></div>
+        </div>
+        <p class="mut gdlocal">หรือใช้ไฟล์ในเครื่องนี้</p>
+      </div>
+      <div class="bar">
+        <button class="btn" id="dvPick" type="button">เลือกบทจาก Drive</button>
+        <button class="btn" id="dvSave" type="button">ดาวน์โหลดไฟล์สำรอง</button>
+        <button class="btn" id="dvRestore" type="button">กู้คืนจากไฟล์สำรอง</button>
+        <input type="file" id="file4" accept=".docx,.doc,.txt,.pdf,application/pdf,application/msword,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+        <input type="file" id="file3" accept=".json,application/json,text/plain" hidden>
+      </div>
+      <div class="dvmsg" id="dvMsg" role="status" aria-live="polite"></div>
+      <div class="dvbox" id="dvBox" hidden>
+        <p id="dvBoxTxt"></p>
+        <p class="mut">“แทนที่ทั้งหมด” จะแทนที่ทุกบท สี และตัวละครที่เลือกไว้ในเครื่องนี้ (ย้อนกลับได้) · “เพิ่มเป็นบทใหม่” ไม่ลบของเดิม</p>
+        <div class="bar">
+          <button class="btn pri" id="dvRepl" type="button">แทนที่ทั้งหมด</button>
+          <button class="btn" id="dvMerge" type="button">เพิ่มเป็นบทใหม่</button>
+          <button class="btn" id="dvCancel" type="button">ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+  <section id="p-edit" hidden><div class="epbar" id="epbar"><input id="epInput" value="" aria-hidden="true"></div><textarea id="src" hidden></textarea><div class="hgrip" id="hg-th" data-k="th" role="separator" aria-orientation="horizontal" tabindex="0"><span class="rzlab" id="lab-th"><span class="lw"></span><span class="sep"> · </span><span class="lh"></span></span></div></section>
+  <section id="p-view">
+    <div class="card">
+      <div id="chars"></div>
+      <div class="add">
+        <input class="in" id="newName" placeholder="เพิ่มชื่อตัวละครที่ไม่มีในบท" maxlength="30">
+        <button class="btn" id="addBtn">เพิ่ม</button>
+      </div>
+      <div class="opts">
+        <div class="speech-reset-row">
+          <label title="ไฮไลท์ทั้งบรรทัดของบทพูด และบรรทัดต่อเนื่องที่ไม่มีชื่อนำหน้าให้ใช้สีเดียวกัน"><input type="checkbox" id="o-speech"> ไฮไลท์บทพูด</label>
+        </div>
+        <div class="font-size-reset-row">
+          <label>ขนาดตัวอักษรในบท <input type="range" id="o-size" min="14" max="25" step="1"> <span id="szv"></span></label>
+          <div class="rzrow"><button class="btn" id="o-reset" type="button">คืนขนาดหน้าจอ</button><span id="rzNow" hidden style="display:none"></span></div>
+        </div>
+      </div>
+      <p class="mut" id="stat" hidden></p>
+    </div>
+    <div class="qbar" id="qbar" role="search">
+      <div class="qrow">
+        <input class="in" id="q" type="search" placeholder="ค้นหาคำ" aria-label="ค้นหาคำ" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" maxlength="100">
+        <span class="qcnt" id="qCnt" role="status" aria-live="polite"></span>
+        <button class="btn qb" id="qClr" type="button" aria-label="ล้างคำค้น" hidden>✕</button>
+        <button class="btn qb" id="qPrev" type="button" aria-label="จุดก่อนหน้า" disabled>▲</button>
+        <button class="btn qb" id="qNext" type="button" aria-label="จุดถัดไป" disabled>▼</button>
+      </div>
+      <div class="qrow qmore" id="qMore" hidden>
+        <label><input type="checkbox" id="qOnly"> แสดงเฉพาะบรรทัดที่พบ</label>
+        <span class="mut" id="qHint" hidden>แตะบรรทัดเพื่อไปที่ตำแหน่งนั้นในบท</span>
+      </div>
+    </div>
+    <div class="qoth mut" id="qOth"></div>
+    <div class="card" id="out"></div>
+    <div class="hgrip" id="hg-h" data-k="h" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="ลากเพื่อปรับความสูงของบท (ดับเบิลคลิกเพื่อคืนค่าเริ่มต้น)" ><span class="rzlab" id="lab-h"><span class="lw"></span><span class="sep"> · </span><span class="lh"></span></span></div>
+  </section>
+  <div class="wgrip l" data-k="l" role="separator" aria-orientation="vertical" tabindex="0" aria-label="ลากเพื่อปรับความกว้าง (ดับเบิลคลิกเพื่อคืนค่าเริ่มต้น)"></div>
+  <div class="wgrip r" data-k="r" role="separator" aria-orientation="vertical" tabindex="0" aria-label="ลากเพื่อปรับความกว้าง (ดับเบิลคลิกเพื่อคืนค่าเริ่มต้น)"></div>
+</main>
+
+<div class="rztip" id="rzTip" aria-hidden="true"><b></b><small></small></div>
+<script>
+const $=s=>document.querySelector(s);
+// เรียงสีจากสว่างไปเข้ม โดยคงสีเดิมทั้งหมดและเพิ่มเขียวอ่อน ฟ้าอ่อน และเขียวเข้ม
+const PAL=[
+  ['เขียวอ่อน','#bbf7d0'],['ฟ้าอ่อน','#bae6fd'],['เหลือง','#facc15'],
+  ['น้ำเงินอ่อน','#7dd3fc'],['เขียว','#4ade80'],['ม่วง','#c084fc'],
+  ['ส้ม','#fb923c'],['แดง','#f87171'],['เขียวเข้ม','#15803d']
+].sort((a,b)=>{
+  const lum=h=>{const v=h.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return .2126*v[0]+.7152*v[1]+.0722*v[2]};
+  return lum(b[1])-lum(a[1]);
+});
+const SAMPLE=`ตัวละครชาย
+มานะ
+ผู้การสิงห์
+ตัวละครหลักหญิง: ชูใจ, ยายแก้ว
+
+00:00:05 ผู้บรรยาย: ฝนตกหนักในคืนที่หมู่บ้านเงียบสงัด
+00:00:12 มานะ: ยาย! ยายอยู่ไหน ผมกลับมาแล้ว
+ยายแก้ว: มานะ… หลานรักของยาย เข้ามาก่อนลูก เดี๋ยวไข้ขึ้น
+ชูใจ: พี่มานะ! ทำไมกลับดึกขนาดนี้ ยายรอพี่ทั้งคืนเลยนะ
+00:00:34 มานะ: ขอโทษนะชูใจ รถเสียกลางทาง ผมต้องเดินมาเกือบสิบกิโล
+(เสียงฟ้าร้องดังลั่น)
+ยายแก้ว: มานะ ชูใจ มานั่งใกล้ ๆ ยายหน่อย ยายมีเรื่องจะเล่า
+ชูใจ: ค่ะยาย
+00:01:05 ผู้การสิงห์: เปิดประตู! ตำรวจ!
+ชูใจ: พี่มานะ… เสียงใครน่ะ
+มานะ: อยู่เงียบ ๆ ไว้ชูใจ เดี๋ยวพี่ออกไปดูเอง`;
+const TCS='\\[?\\d{1,2}:\\d{2}(?::\\d{2})?(?:[.,:;]\\d{1,3})?\\]?';
+const TC=new RegExp('^\\s*('+TCS+')(?:\\s*(?:-->|[-–—~])\\s*'+TCS+')?\\s*');
+const SPK=/^(?:\[([^\]\n]{1,30})\]|([^\s:：\[(][^:：\n]{0,29}?))\s*[:：]\s*(.*)$/;
+const TCI='\\d{1,2}:\\d{2}(?::\\d{2})?(?:[.,:;]\\d{1,3})?',TCI3='\\d{1,2}:\\d{2}:\\d{2}(?:[.,:;]\\d{1,3})?';
+// ไทม์โค้ดแบบกลุ่มในวงเล็บ (cue): (00.37) · (00.57 เสียงก้อง) · (แอ็คเกือบล้ม / 03.01) · (04.17 ก / 04.26 ข) · [00:37]
+// ต้องมีเวลา (นาที.วินาที หรือ นาที:วินาที) อย่างน้อยหนึ่งตัวในวงเล็บ · ที่เหลือเป็นคำกำกับอะไรก็ได้ (ไม่เกิน 60 ตัวอักษร)
+const TD='[\\d๐-๙]',TT=TD+'{1,2}[.:]'+TD+'{2}(?:[.:]'+TD+'{2})?(?:[.,]'+TD+'{1,3})?';
+const CUEG='[\\(\\[（]\\s*((?=(?:[^()（）\\[\\]\\n]*?[^\\d๐-๙.:()（）\\[\\]\\n])?'+TT+'(?!'+TD+'))[^()（）\\[\\]\\n]{1,60}?)\\s*[\\)\\]）]';
+const LEADCUE=new RegExp('^\\s*'+CUEG+'\\s*(.*)$'),CUERX=new RegExp(CUEG);
+const NTC=new RegExp('^(?:\\[([^\\]\\n]{1,30})\\]|([^\\s:：\\[(（][^:：\\n(（\\[]{0,29}?))\\s*(?:'+CUEG+'|('+TCI3+'(?:\\s*(?:-->|[-–—~])\\s*'+TCI3+')?)(?=\\s|[:：]|$))\\s*[:：]?\\s*(.*)$');
+const LSPLIT=/\r\n|[\n\r\u2028\u2029]/,ZW=/[\u200B-\u200D\u2060\uFEFF\u00AD]/g;
+const linesOf=t=>String(t).split(LSPLIT).map(l=>l.replace(ZW,''));   // แยกบรรทัด (รองรับ CRLF) และตัดอักขระล่องหน
+const SEPL=/^\s*(?:[*＊=_~#\-–—•·]{3,}|[-–—•·](?:\s|$))/;   // เส้นคั่น (*****) หรือขีดนำหน้าหมายเหตุ (- ...)
+const nameShape=n=>n.split(/\s+/).length<=4&&!/[!?！？"“”‘’…]|\.{2,}/.test(n);   // ชื่อไม่ใช่ประโยค
+// หัวข้อรายชื่อตัวละคร · ระบุเพศ (ตัวละครชาย / ตัวละครหญิง) หรือรายชื่อรวม (รายชื่อตัวละคร)
+const CAST='(?:ตัวละคร|นักแสดง|นักพากย์(?:เสียง)?|ผู้แสดง|ผู้พากย์)',LV='(?:หลัก|รอง|ประกอบ|เด็ก|ทั่วไป|อื่น ๆ|อื่นๆ)',NOTE='(?:\\s*[\\(（][^\\)）]{0,30}[\\)）])?',TAILC='\\s*(?:[:：\\-–—]\\s*(.*?))?\\s*$';
+const HEAD_TH=new RegExp('^\\s*'+CAST+'\\s*'+LV+'?\\s*[\\(（]?\\s*(?:ผู้)?(ชาย|หญิง)\\s*[\\)）]?\\s*'+LV+'?\\s*(?:ทั้งหมด)?'+NOTE+TAILC);
+const HEAD_EN=/^\s*(male|female)\s+(?:(?:main|lead|supporting|minor)\s+)?(?:characters?|cast|roles?)\s*(?:[:：\-–—]\s*(.*?))?\s*$/i;
+const HEAD_ALL=new RegExp('^\\s*(?:รายชื่อ\\s*(?:ตัวละคร|นักแสดง|นักพากย์|ผู้แสดง|ผู้พากย์)|ตัวละคร)\\s*(?:ทั้งหมด|หลัก|รอง|ประกอบ|ในเรื่อง|ในตอนนี้|ในบทนี้)?'+NOTE+TAILC);
+const HEAD_ALE=/^\s*(?:cast(?:\s+list)?|characters?(?:\s+list)?|list\s+of\s+characters|dramatis\s+personae)\s*(?:[:：\-–—]\s*(.*?))?\s*$/i;
+const HEAD_GRP=new RegExp('^\\s*(?:ตัว(?:ละคร)?(?:ผ่านกลุ่ม|ผ่าน|กลุ่ม|ประกอบกลุ่ม)|กลุ่มตัวประกอบ)'+NOTE+TAILC);   // ตัวผ่านกลุ่ม / ตัวละครกลุ่ม ฯลฯ (ไม่ระบุเพศ)
+const SUBH=/^\s*(?:ผู้)?(ชาย|หญิง)\s*[:：]\s*(.*?)\s*$|^\s*ผู้(ชาย|หญิง)\s*$/;   // หัวข้อย่อยใต้ “รายชื่อตัวละคร”
+// คำที่ไม่ใช่ชื่อตัวละคร (ป้ายหัวข้อ · คำกำกับฉาก · ข้อมูลหน้าปกบท) ไม่นับเป็นชื่อ แม้จะอยู่หน้า “:”
+const NONNAME=/^(?:ฉาก(?:ที่)?|ตอน(?:ที่)?|ภาคที่|ep\.?|episode|scene|sc\.?|int\.?|ext\.?|cut|cut to|fade|sfx|bgm|music|notes?|nb|หมายเหตุ|เพลง|ภาพ|จบ|จบฉาก|จบตอน|เวลา|time|tc|timecode|title|ชื่อเรื่อง|เรื่อง|ผู้กำกับ|ผู้แปล|ผู้เขียนบท|วันที่|date|หน้า|page|ลำดับ|no\.?|ตัวละคร|บทพูด|dialogue|character|name|https?|ftp|mailto|tel)$|^(?:ฉากที่|ตอนที่|scene|ep\.?|episode|part)\s*\d+/i;
+const nameOk=n=>!!n&&n.length<=30&&!/^[\d\s.,]+$/.test(n)&&!NONNAME.test(n);
+const K='dub-highlighter-v3';
+let S={ver:19,eps:[],cur:0,colors:{},pick:{},extra:[],opt:{full:false,cont:true,size:18,sz:3,lv:2,w:0,h:0,th:0}};
+const WMIN=360,WBASE=760,WDEF=Math.round(WBASE*1.32),HMIN=160,HMAX=6000;   // 100% = 760px · ค่าเริ่มต้นกว้าง 132% = 1003px
+const okW=v=>+v>=WMIN?Math.min(Math.round(+v),6000):0,okH=v=>+v>=HMIN?Math.min(Math.round(+v),HMAX):0;
+let rows=[],names=[],counts=Object.create(null),gender=Object.create(null),groups=[],active=null,had=false;
+try{
+  const cur=localStorage.getItem(K),s=JSON.parse(cur||localStorage.getItem('dub-highlighter-v2')||'null');
+  if(s&&(typeof s.text==='string'||Array.isArray(s.eps))){
+    S.colors=s.colors||{};S.pick=s.pick||{};S.extra=s.extra||[];
+    if(Array.isArray(s.eps)){
+      S.eps=s.eps.map(e=>({name:String((e&&e.name)||''),text:String((e&&e.text)||''),file:String((e&&e.file)||'').slice(0,255)}));
+      S.cur=S.eps.length?Math.min(Math.max(0,+s.cur||0),S.eps.length-1):0;
+    }else S.eps=typeof s.text==='string'&&s.text.trim()?[{name:'ตอนที่ 1',text:s.text,file:''}]:[];
+    // บทตัวอย่างที่ยังไม่ได้แก้ (ค่าเริ่มต้นของเวอร์ชันเก่า) ไม่นับเป็นบทของผู้ใช้ → เริ่มต้นแบบไม่มีแท็บ (เฉพาะข้อมูลที่บันทึกโดยเวอร์ชันเก่า)
+    if(!s.ver&&S.eps.length===1&&S.eps[0].text===SAMPLE&&/^ตอนที่ 1$/.test(S.eps[0].name))S.eps=[];
+    if(cur&&s.opt)S.opt={full:!!s.opt.full,cont:s.opt.cont!==false,size:s.opt.sz===3?Math.min(25,Math.max(14,Math.round(+s.opt.size)||18)):18,sz:3,lv:2,w:s.opt.lv===2?okW(s.opt.w):0,h:s.opt.lv===2?okH(s.opt.h):0,th:s.opt.lv===2?okH(s.opt.th):0};   // ค่าขนาดขอบที่บันทึกไว้ก่อนตั้งค่าเริ่มต้นใหม่ → ใช้ค่าเริ่มต้นใหม่หนึ่งครั้ง
+    had=true;
+  }
+}catch(e){}
+// เปิดครั้งแรก: ไม่มีบทและไม่มีแท็บ · แท็บเกิดเมื่อเปิดไฟล์ เพิ่มบท วางบท หรือกด “ใช้บทตัวอย่าง”
+if(!had){S.eps=[];S.cur=0}
+const EMPTY={name:'',text:'',file:''};
+const E=()=>S.eps[S.cur]||EMPTY;   // ยังไม่มีบท → EMPTY (อ่านอย่างเดียว · จุดที่เขียนต้องสร้างบทก่อน)
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rx=n=>n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const nextColor=()=>{const used=Object.keys(S.pick).filter(n=>S.pick[n]).map(n=>S.colors[n]);return (PAL.find(p=>!used.includes(p[1]))||PAL[used.length%PAL.length])[1]};
+const setPick=(n,on)=>{if(on){S.pick[n]=true;if(!S.colors[n])S.colors[n]=nextColor()}else delete S.pick[n]};
+
+const P=n=>S.pick[n]===true;
+const TCB=new RegExp('^\\s*('+TCS+')\\s*');   // time code ตัวที่สอง (เวลาออก) คั่นด้วยช่องว่าง เช่น ตารางที่มีคอลัมน์เวลาเข้า/ออก
+const parts=line=>{
+  const s=line.replace(/^\s*\d{1,5}[.)]?(?=\s+\[?\d{1,2}:\d{2})/,'');   // เลขลำดับแถวที่นำหน้า time code
+  const t=s.match(TC);
+  if(!t)return {t:null,tc:'',rest:s.replace(/^\s+/,'')};
+  let tc=t[0].trim().replace(/[\[\]]/g,'').replace(/^[-–—]\s*/,''),rest=s.slice(t[0].length);
+  if(!/(?:-->|[-–—~])/.test(tc)){const b=rest.match(TCB);if(b){tc+=' - '+b[1].replace(/[\[\]]/g,'');rest=rest.slice(b[0].length)}}
+  return {t,tc,rest:rest.replace(/^[-–—]\s*/,'')};
+};
+function headOf(rest){
+  let m=rest.match(HEAD_TH)||rest.match(HEAD_EN);
+  if(m)return {g:(m[1]==='ชาย'||/^male$/i.test(m[1]))?'ชาย':'หญิง',inl:(m[2]||'').trim()};
+  m=rest.match(HEAD_ALL)||rest.match(HEAD_ALE)||rest.match(HEAD_GRP);
+  return m?{g:'',inl:(m[1]||'').trim()}:null;
+}
+function scan(lines){
+  const info=lines.map(()=>null),G=Object.create(null);
+  const addNames=(txt,g)=>txt.split(/[,，、;；\/]|\s+และ\s+/).forEach(p=>{
+    const n=p.replace(/\s*[\(（][^\)）]*[\)）]/g,'').split(/\s+[-–—]\s+/)[0].replace(/^\s*(?:[-–—•·*]|\d{1,2}[.)])\s*/,'').trim();
+    if(n&&n.length<=30&&!NONNAME.test(n)&&!/^(?:ตัวละคร|นักแสดง|นักพากย์|ผู้แสดง|ผู้พากย์|รายชื่อ)/.test(n)&&(!(n in G)||(!G[n]&&g)))G[n]=g;
+  });
+  // หาหัวข้อ รายชื่อตัวละคร / ตัวละครชาย / ตัวละครหญิง และรายชื่อใต้หัวข้อ
+  // cur: null = ไม่ได้อยู่ในรายชื่อ · '' = รายชื่อรวม (ไม่ระบุเพศ) · 'ชาย' / 'หญิง'
+  // gen: รายชื่อนี้เริ่มจากหัวข้อ “รายชื่อตัวละคร” (รวม) → ใต้หัวข้อมีหัวข้อย่อย ชาย: … / หญิง: … ได้
+  // got: มีชื่ออยู่ในรายชื่อแล้ว (ยังไม่มี → ยอมให้มีบรรทัดว่างคั่นหลังหัวข้อได้ 1 บรรทัด เพราะไฟล์ Word มักเว้นบรรทัดใต้หัวข้อ)
+  let cur=null,gen=false,got=false,gap=false,tail=false;   // tail: เพิ่งจบรายชื่อ (ยอมรับบรรทัดรายชื่อแบบ ก้อง//ตั้ม ที่ตามมา)
+  lines.forEach((line,i)=>{
+    const {t,rest}=parts(line);
+    const hd=headOf(rest);
+    if(hd){
+      cur=hd.g;info[i]={k:'head',inl:hd.inl};tail=false;
+      if(hd.g==='')gen=true;
+      got=!!hd.inl;gap=false;
+      if(hd.inl)addNames(hd.inl,hd.g);
+      return;
+    }
+    if(cur===null){
+      if(tail&&rest.trim()){
+        const s0=rest.trim(),ps=s0.split('/').map(x=>x.trim()).filter(Boolean);
+        if(!t&&s0.length<=60&&ps.length>=2&&ps.every(x=>x.length<=30&&nameShape(x))&&!/[:：]/.test(s0)&&!/^[\(\[（【]/.test(s0)&&!CUERX.test(s0)){info[i]={k:'cast'};addNames(s0,'');return}
+        tail=false;
+      }
+      return;
+    }
+    if(!rest.trim()){
+      if(!got&&!gap){gap=true;return}
+      cur=null;gen=false;tail=true;return;
+    }
+    if(gen){   // ใต้ “รายชื่อตัวละคร” อาจมีหัวข้อย่อย ชาย: … / หญิง: … / ผู้ชาย / ผู้หญิง
+      const sm=rest.match(SUBH);
+      if(sm){const g=(sm[1]||sm[3])==='ชาย'?'ชาย':'หญิง';cur=g;got=true;info[i]={k:'head',inl:(sm[2]||'').trim()};if(sm[2])addNames(sm[2],g);return}
+    }
+    const s=rest.replace(/^\s*(?:[-–—•·*]|\d{1,2}[.)])\s*/,'').trim();
+    if(!t&&s&&s.length<=40&&!/[:：]/.test(s)&&!/^[\(\[（【]/.test(s)&&!CUERX.test(s)){info[i]={k:'cast'};got=true;addNames(s,cur);return}
+    cur=null;gen=false;
+  });
+  return {info,G};
+}
+// ---- วิเคราะห์ชื่อตัวละครจากบท ----
+// 1) ชื่อใต้หัวข้อรายชื่อ  2) ชื่อผู้พูดที่ระบุชัดเจน (ชื่อ: บท · ชื่อ (เวลา) บท · [ชื่อ]: บท)
+// 3) ชื่อที่ต้นบรรทัดโดยไม่มี “:” (ชื่อ␣บทพูด) — ยอมรับเมื่อพบซ้ำอย่างน้อย 3 บรรทัด และบทส่วนใหญ่ไม่ได้เขียนแบบมี “:”
+const TITLES=/^(?:คุณ|นาย|นาง|นางสาว|น\.ส\.|ดร\.|ศ\.|ผศ\.|รศ\.|Mr\.?|Mrs\.?|Ms\.?|Miss|Dr\.?|Prof\.?)$/i;
+const WSTOP=new Set(('ก็ แต่ และ หรือ แล้ว ว่า ที่ ซึ่ง อัน ใน บน ใต้ จาก ถึง กับ แก่ ต่อ โดย เพื่อ เพราะ เมื่อ ถ้า หาก จน ทั้ง แม้ เพียง แค่ อีก ยัง ก่อน หลัง ไม่ ใช่ ได้ จะ ต้อง คง น่า อาจ เคย กำลัง ควร อยาก ให้ มี เป็น คือ อยู่ ไป มา ทำ บอก พูด เห็น รู้ เอา '+
+  'ผม ฉัน ดิฉัน เรา เขา เธอ คุณ มัน เอ็ง แก ข้า กู มึง ท่าน พวก นี่ นั่น โน่น นี้ นั้น โน้น อะไร ใคร ทำไม ไหน ยังไง อย่างไร เมื่อไหร่ เท่าไหร่ กี่ '+
+  'เฮ้ย เฮ้ โอ้ โอ๊ย โอ๊ะ อ๋อ อืม เออ อ้าว หา ฮะ ค่ะ ครับ คะ จ้ะ จ๊ะ นะ เอ่อ อ่า ว้าย ว้าว โธ่ เฮ้อ ฮึ หึ ฮ่า เอ๊ะ อ้อ อุ๊ย แหม ไชโย เย้ '+
+  'ตัด ภาพ เสียง ซีน ช็อต เปิด ปิด จบ ฉาก ตอน เพลง '+
+  'the a an i you he she it we they and but or so if ok okay yes no oh well hey hi hello what why how who when where this that these those is are was were be to of in on at for with from by as').split(/\s+/));
+const weakOk=n=>n.length>=1&&n.length<=24&&nameOk(n)&&/\p{L}/u.test(n)&&!/^[\dะ-ฺๅ็-๎]/.test(n)&&!/[ๆ!?！？"“”‘’'()（）\[\]{}<>«»…]/.test(n)&&!/[.,，:：;；*#@~^|\\\/=+_-]$/.test(n)&&!WSTOP.has(n.toLowerCase())&&!(/^[A-Za-z]/.test(n)&&!/^[A-Z]/.test(n));
+function weakLead(s){   // "ชื่อ␣บทพูด" → ชื่อ (ขึ้นต้นด้วยคำนำหน้า เช่น คุณ/นาย ให้รวมคำถัดไปเป็นชื่อเดียว)
+  const tk=s.split(/[ \t 　]+/);
+  if(tk.length<2||!tk[1])return null;
+  let n=TITLES.test(tk[0])&&tk.length>=3?tk[0]+' '+tk[1]:tk[0];
+  n=n.replace(/[>|=\-–—]+$/,'');
+  return weakOk(n)?n:null;
+}
+// แยกคำกำกับท้ายชื่อออกจากชื่อ เช่น “มานะ (พูดเบา ๆ)” → ชื่อ มานะ · คำกำกับ (พูดเบา ๆ)
+const splitAnn=n=>{const m=n.match(/^(.*?\S)\s*([\(（][^\)）]{1,24}[\)）])$/);return m&&!/\d[:：]\d/.test(m[2])?{n:m[1].trim(),ann:m[2]}:{n,ann:''}};
+const castCache=new Map();
+const castOf=text=>{let g=castCache.get(text);if(!g){g=scan(linesOf(text)).G;if(castCache.size>40)castCache.clear();castCache.set(text,g)}return g};
+function analyze(){
+  const lines=linesOf(E().text),{info,G}=scan(lines);
+  // ตัวละครที่ตอนนี้ไม่ได้ระบุเพศ ใช้เพศที่ระบุไว้ในบทตอนอื่น
+  const mem=Object.create(null);
+  S.eps.forEach((e,i)=>{if(i!==S.cur){const g=castOf(e.text);for(const n in g)if(g[n]&&!mem[n])mem[n]=g[n]}});
+  const gf=n=>G[n]||mem[n]||null;
+  // ขั้นที่ 1: บรรทัดที่ระบุผู้พูดชัดเจน (ชื่อ: บท · ชื่อ (ไทม์โค้ด/คำกำกับ) บท · [ชื่อ]: บท · (ไทม์โค้ด) ชื่อ: บท)
+  rows=lines.map((line,i)=>{
+    const r={line};
+    if(info[i]){Object.assign(r,info[i]);return r}
+    const {rest,tc:ltc}=parts(line);
+    r.rest=rest;r.ltc=ltc;
+    if(!rest.trim())return r;
+    let name=null,body='',tc=ltc;
+    const nm=rest.match(NTC);
+    if(nm){const n=(nm[1]||nm[2]).trim();if(nameOk(n)&&nameShape(n)){name=n;body=nm[5];tc=(nm[3]||nm[4]).replace(/\s+/g,' ').trim()}}
+    if(!name){   // ขึ้นต้นด้วยไทม์โค้ดในวงเล็บ: “(00.50 เสียงก้อง) บท” = บรรทัดต่อของผู้พูดคนเดิม · “(00.37) ชื่อ: บท” = ผู้พูดใหม่
+      const lm=rest.match(LEADCUE);
+      if(lm){
+        r.cue=lm[1].replace(/\s+/g,' ').trim();
+        const m2=lm[2].match(SPK);
+        if(m2&&!/^[^:：\n]*\d[:：]\d/.test(lm[2])){const a=splitAnn((m2[1]||m2[2]).trim());if(nameOk(a.n)&&nameShape(a.n)){name=a.n;body=(a.ann?a.ann+' ':'')+m2[3];tc=r.cue}}
+      }
+    }
+    if(!name&&!r.cue&&!/^[^:：\n]*\d[:：]\d/.test(rest)){
+      const m=rest.match(SPK);
+      if(m){const a=splitAnn((m[1]||m[2]).trim());if(nameOk(a.n)){name=a.n;body=(a.ann?a.ann+' ':'')+m[3]}}
+    }
+    if(name){r.name=name;r.tc=tc;r.body=body.replace(/^[\s:：]+/,'').replace(/\s+$/,'')}
+    return r;
+  });
+  // ขั้นที่ 2-3: บรรทัดที่ขึ้นต้นด้วยชื่อที่รู้จักแล้ว (รายชื่อ · ชื่อที่เพิ่มเอง · ชื่อที่พบในขั้นที่ 1) หรือชื่อที่พบซ้ำที่ต้นบรรทัด
+  const stage=t=>/^[\(\[（【<]/.test(t),isOpen=r=>!r.name&&!r.k&&r.rest&&r.rest.trim();
+  const contOk=r=>isOpen(r)&&(!!r.cue||!stage(r.rest.trim()))&&!SEPL.test(r.rest);   // นับเป็น “ส่วนต่อ” ของบทพูดได้ (ไม่ใช่คำบรรยายฉาก / เส้นคั่น / หมายเหตุ)
+  // โครงสร้างบท: ถ้าแต่ละคำพูดคั่นด้วยบรรทัดว่าง (เป็นบล็อก) บรรทัดที่ต่อท้ายผู้พูดโดยไม่มีบรรทัดว่างคั่น คือส่วนต่อของคำพูดนั้น ไม่ใช่ผู้พูดคนใหม่
+  const nExp=rows.filter(r=>r.name).length;
+  let nBlk=0,nDlg=nExp;
+  rows.forEach((r,i)=>{
+    if(r.name){const p=i?rows[i-1]:null;if(!p||p.k||!p.line.trim()||SEPL.test(p.line))nBlk++}
+    else if(contOk(r))nDlg++;
+  });
+  const blockMode=nExp>=3&&nBlk>=.6*nExp,contMode=nExp>=3&&(blockMode||nExp>=.6*nDlg);
+  const sweep=fn=>{   // เดินไล่ทีละบรรทัด · who = ผู้พูดของบล็อกที่กำลังอ่านอยู่ (บรรทัดว่าง / หัวข้อ / หมายเหตุ ปิดบล็อก)
+    let who=null;
+    rows.forEach(r=>{
+      if(r.k||!r.rest||!r.rest.trim()){who=null;return}
+      if(r.name){who=r.name;return}
+      if(blockMode&&who!==null&&contOk(r))return;   // อยู่กลางบล็อกของผู้พูดคนเดิม ไม่ใช่ผู้พูดคนใหม่
+      who=null;fn(r);
+      if(r.name)who=r.name;
+    });
+  };
+  const useNames=arr=>{
+    const ks=[...new Set(arr)].filter(Boolean).sort((a,b)=>b.length-a.length);
+    if(!ks.length)return;
+    const re=new RegExp('^('+ks.map(rx).join('|')+')(?=\\s|[:：\\-–—]|$)');
+    sweep(r=>{
+      if(!isOpen(r))return;
+      const x=r.rest.match(re);if(!x)return;
+      r.name=x[1];r.tc=r.ltc;r.body=r.rest.slice(x[0].length).replace(/^[\s:：\-–—]+/,'').replace(/^[\s:：]+/,'').replace(/\s+$/,'');
+    });
+  };
+  const nOpen=rows.filter(r=>isOpen(r)&&!r.cue&&!stage(r.rest.trim())&&!SEPL.test(r.rest)).length;
+  useNames(Object.keys(G).concat(S.extra,rows.filter(r=>r.name).map(r=>r.name)));
+  if(nExp<.6*(nExp+nOpen)){   // บทส่วนใหญ่ไม่ได้เขียน “ชื่อ: บท” → ดูชื่อที่ต้นบรรทัด
+    const cnt=Object.create(null);
+    sweep(r=>{if(!isOpen(r))return;const t=r.rest.trim();if(stage(t))return;const n=weakLead(t);if(n)cnt[n]=(cnt[n]||0)+1});
+    useNames(Object.keys(cnt).filter(n=>cnt[n]>=3));
+  }
+  counts=Object.create(null);
+  rows.forEach(r=>{if(r.name)counts[r.name]=(counts[r.name]||0)+1});
+  Object.keys(G).forEach(n=>{if(!(n in counts))counts[n]=0});
+  // รายชื่อที่คั่นด้วยช่องว่าง (มานะ ผู้การสิงห์) → ถ้าทุกคำเป็นชื่อที่พบในบทอยู่แล้ว ให้แยกเป็นหลายชื่อ
+  Object.keys(G).forEach(n=>{
+    if(counts[n]||!/\s/.test(n))return;
+    const tk=n.split(/\s+/);
+    if(tk.length<2||!tk.every(t=>counts[t]>0))return;
+    const g=G[n];delete G[n];delete counts[n];
+    tk.forEach(t=>{if(!(t in G))G[t]=g});
+  });
+  S.extra.forEach(n=>{if(!(n in counts))counts[n]=0});
+  // ขั้นที่ 4: บรรทัดที่ไม่มีชื่อ แต่ต่อท้ายบทพูดของใครสักคนโดยไม่มีบรรทัดว่างคั่น → ไฮไลท์ตามผู้พูดคนนั้น (cn) · ไม่นับรวมในจำนวนบรรทัดของตัวละคร · ปิดได้ในตัวเลือก
+  if(S.opt.cont!==false&&contMode){
+    let who=null;
+    rows.forEach(r=>{
+      if(r.k||!r.rest||!r.rest.trim()){who=null;return}
+      if(r.name){who=r.name;return}
+      if(who!==null&&contOk(r)){r.cn=who;return}
+      who=null;
+    });
+  }
+  gender=G;
+  names=Object.keys(counts);
+  const ordered=Object.keys(G).concat(names.filter(n=>!(n in G)));
+  const male=ordered.filter(n=>gf(n)==='ชาย'),female=ordered.filter(n=>gf(n)==='หญิง'),other=ordered.filter(n=>!gf(n));
+  groups=[['ตัวละครชาย',male],['ตัวละครหญิง',female],[male.length||female.length?'ตัวละครอื่น ๆ (ไม่ระบุเพศ)':'รายชื่อตัวละคร',other]];
+}
+function list(){
+  if(active&&!(active in counts))active=null;
+  const pal=n=>{
+    const c=S.colors[n],on=P(n),del=S.extra.includes(n)&&!(n in gender);
+    return `<div class="pal"><b>สีไฮไลท์ของ “${esc(n)}”</b><div class="sw">${PAL.map(([nm,h])=>`<button style="background:${h}" class="${on&&c===h?'on':''}" data-h="${h}" aria-label="สี${nm}" title="${nm}"></button>`).join('')}</div><div class="row">${on?'<button class="btn" data-a="off">ยกเลิกไฮไลท์</button>':''}${del?'<button class="btn" data-a="del">ลบชื่อนี้</button>':''}</div></div>`;
+  };
+  $('#chars').innerHTML=names.length?groups.filter(g=>g[1].length).map(([lb,arr])=>
+    `<div class="grp"><div class="gl">${lb}</div><div class="chips">${arr.map(n=>{
+      const on=P(n),c=counts[n]||0;
+      return `<button class="chip${on?' on':''}${active===n?' act':''}" data-n="${esc(n)}" data-c="${c}" title="พบ ${c} บรรทัด" aria-pressed="${on}"${on?` style="background:${S.colors[n]}"`:''}>${esc(n)}</button>`}).join('')}</div>${active&&arr.includes(active)?pal(active):''}</div>`).join('')
+    :'<p class="mut">ยังไม่พบชื่อตัวละคร ลองพิมพ์บทในรูปแบบ ชื่อ: บทพูด หรือเพิ่มชื่อด้านล่าง</p>';
+}
+// ---- ค้นหาคำในบรรทัดบท ----
+let Q='',QI=0,QN=0,QM=0,QR=0,QONLY=false,QRG=null;   // คำค้น · จุดที่ดูอยู่ · จำนวนจุดที่พบ · จำนวนจุดที่ใส่ไฮไลท์ · จำนวนบรรทัดที่พบ · แสดงเฉพาะบรรทัดที่พบ · ตำแหน่งที่พบของแต่ละบรรทัด
+const QCAP=2000;   // ใส่ไฮไลท์สูงสุด 2000 จุดแรก (คำสั้น/พบบ่อยมากจะได้ไม่หน่วง) ที่เหลือยังนับให้
+const QIGN='[\\u200B-\\u200D\\u2060\\uFEFF\\u00AD]*',QTHD='๐๑๒๓๔๕๖๗๘๙';
+function qRegex(q){   // ไม่สนตัวพิมพ์เล็ก/ใหญ่ · เว้นวรรคหรือไม่เว้นก็ตรง (บทไทยเว้นวรรคไม่สม่ำเสมอ) · เลขไทย/เลขอารบิกตรงกัน · ข้ามอักขระล่องหน (ZWSP)
+  q=q.replace(/ํา/g,'ำ').replace(/[​-‍⁠﻿­]/g,'').trim();
+  if(!q)return null;
+  const th=c=>/[ก-๛]/.test(c);
+  let src='',prev='';
+  for(const ch of q){
+    if(/\s/.test(ch)){if(prev!==' '){src+='\\s*';prev=' '}continue}
+    let c;
+    if(ch>='0'&&ch<='9')c='['+ch+QTHD[+ch]+']';
+    else if(QTHD.includes(ch))c='['+QTHD.indexOf(ch)+ch+']';
+    else if(ch==='ำ')c='(?:ำ|ํา)';
+    else c=ch.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    if(prev&&prev!==' '&&((th(prev)&&th(ch))||prev===')'||prev==='）'))src+='[ \\t]*';
+    src+=c+QIGN;prev=ch;
+  }
+  try{return new RegExp(src,'giu')}catch(e){return null}
+}
+// ใส่ <mark> ครอบช่วงที่ค้นเจอ · off = ตำแหน่งเริ่มของข้อความส่วนนี้ในบรรทัดที่แสดง · rg = ช่วงที่ค้นเจอของทั้งบรรทัด
+const mk=(txt,off,rg)=>{
+  if(!rg||!txt)return esc(txt);
+  let out='',p=0;
+  for(const h of rg){
+    const a=Math.max(h.s-off,0),b=Math.min(h.e-off,txt.length);
+    if(h.i>=QCAP||b<=a||b<=p)continue;
+    const a2=Math.max(a,p);
+    out+=esc(txt.slice(p,a2))+`<mark class="hit${h.i===QI?' cur':''}" data-i="${h.i}">`+esc(txt.slice(a2,b))+'</mark>';
+    p=b;
+  }
+  return out+esc(txt.slice(p));
+};
+function qOthers(){   // บทอื่นที่มีคำนี้
+  const re=Q?qRegex(Q):null;if(!re)return '';
+  let h='';
+  S.eps.forEach((e,i)=>{
+    if(i===S.cur)return;
+    let n=0;for(const l of e.text.split('\n')){re.lastIndex=0;if(re.test(l))n++}
+    if(n)h+=`<button type="button" class="btn qo" data-i="${i}" title="${esc(epTip(e))}">${esc(e.name||'ไม่มีชื่อ')} · ${n}</button>`;
+  });
+  return h?'<span>พบในบทอื่น:</span> '+h:'';
+}
+function qUi(){
+  const on=!!Q;
+  $('#qbar').classList.toggle('on',on);
+  $('#qClr').hidden=!on;$('#qMore').hidden=!on;
+  $('#qHint').hidden=!(on&&QONLY);
+  $('#qCnt').textContent=!on?'':QN?`${QI+1}/${QN>QM?QM+'+':QN}`:'ไม่พบ';
+  $('#qCnt').title=on&&QN?`พบ ${QN} จุด ใน ${QR} บรรทัด`+(QN>QM?` · ใส่ไฮไลท์ ${QM} จุดแรก พิมพ์คำให้ยาวขึ้นเพื่อให้แคบลง`:''):'';
+  $('#qPrev').disabled=$('#qNext').disabled=!QM;
+  $('#qOth').innerHTML=qOthers();
+}
+function view(){
+  const o=S.opt;
+  const tag=(n,off,rg)=>`<span class="tag" style="background:${S.colors[n]||PAL[0][1]}">${mk(n,off,rg)}</span>`;
+  // ไฮไลท์เฉพาะรายชื่อในหัวข้อ/รายการตัวละคร (เทียบทีละชื่อ ไม่ไฮไลท์คำในหัวข้อ)
+  const hlList=(t,base,rg)=>{
+    let off=base;
+    return t.split(/([,，、;；\/]|\s+และ\s+)/).map((tok,k)=>{
+      const at=off;off+=tok.length;
+      if(k%2)return mk(tok,at,rg);
+      const nm=tok.replace(/\s*[\(（][^\)）]*[\)）]/g,'').split(/\s+[-–—]\s+/)[0].replace(/^\s*(?:[-–—•·*]|\d{1,2}[.)])\s*/,'').trim();
+      const ix=nm&&P(nm)?tok.indexOf(nm):-1;
+      return ix<0?mk(tok,at,rg):mk(tok.slice(0,ix),at,rg)+tag(nm,at+ix,rg)+mk(tok.slice(ix+nm.length),at+ix+nm.length,rg);
+    }).join('');
+  };
+  const shown=r=>!r.k&&r.name&&P(r.name);
+  const shownC=r=>!r.k&&!r.name&&r.cn&&P(r.cn);   // บรรทัดต่อเนื่องของตัวละครที่เลือกไฮไลท์
+  const gapTc=r=>r.tc&&r.body?' ':'';   // เว้นวรรคหลัง “(ไทม์โค้ด)” ก่อนบทพูด (บรรทัดที่ไม่มีไทม์โค้ดคงเดิม)
+  const dsp=r=>shown(r)?r.name+(r.tc?` (${r.tc})`:'')+gapTc(r)+r.body:r.line;   // ข้อความที่แสดงอยู่จริงในบรรทัดนั้น
+  const re=Q?qRegex(Q):null;
+  QRG=null;QN=0;QM=0;QR=0;
+  if(re){
+    QRG=[];
+    rows.forEach((r,ri)=>{
+      const d=dsp(r);if(!d)return;
+      re.lastIndex=0;let m,rg=null;
+      while((m=re.exec(d))){
+        if(!m[0].length){re.lastIndex++;continue}
+        (rg||(rg=[])).push({s:m.index,e:m.index+m[0].length,i:QN++});
+      }
+      if(rg){QRG[ri]=rg;QR++}
+    });
+    QM=Math.min(QN,QCAP);
+    if(QI>=QM)QI=0;
+  }
+  const flt=!!(QONLY&&QRG),nSel=rows.filter(shown).length,nCt=rows.filter(shownC).length;
+  $('#out').style.fontSize=o.size+'pt';
+  $('#szv').textContent=o.size+' pt';
+  $('#out').innerHTML=!S.eps.length?'<p class="mut" style="margin:6px 4px">ยังไม่มีบท · กดปุ่ม “＋ เพิ่มบท” เพื่อเลือกไฟล์บท</p>':rows.map((r,ri)=>{
+    const rg=QRG&&QRG[ri];
+    if(flt&&!rg)return '';
+    const l=r.line,no=flt?`<span class="lno">${ri+1}</span>`:'',cl=flt?'ln flt':'ln';
+    if(r.k==='head'){
+      const s=r.inl?l.lastIndexOf(r.inl):-1;
+      return `<div class="${cl}" data-r="${ri}">${no}${s<0?`<b>${mk(l,0,rg)}</b>`:`<b>${mk(l.slice(0,s),0,rg)}</b>${hlList(l.slice(s),s,rg)}`}</div>`;
+    }
+    if(r.k==='cast')return `<div class="${cl}" data-r="${ri}">${no}${hlList(l,0,rg)}</div>`;
+    if(shownC(r)){
+      const c=S.colors[r.cn]||PAL[0][1];
+      const st=`--c:${c};`+(o.full?`background:${c}33;border-left-color:${c}`:'');
+      return `<div class="${cl} ct" data-r="${ri}" style="${st}">${no}${mk(l,0,rg)}</div>`;
+    }
+    if(!shown(r))return `<div class="${cl}" data-r="${ri}">${no}${mk(l,0,rg)}</div>`;
+    const c=S.colors[r.name]||PAL[0][1];
+    const st=o.full?`background:${c}33;border-left-color:${c}`:'';
+    const tcs=(r.tc?` (${r.tc})`:'')+gapTc(r);
+    return `<div class="${cl}" data-r="${ri}" style="${st}">${no}${tag(r.name,0,rg)}${mk(tcs,r.name.length,rg)}${mk(r.body,r.name.length+tcs.length,rg)}</div>`;
+  }).join('');
+  $('#stat').textContent=nSel?`ไฮไลท์ ${nSel} บรรทัด`+(nCt?` + บรรทัดต่อเนื่อง ${nCt}`:''):'';
+  qUi();
+  queueStatusUpdate();
+}
+function refresh(){analyze();list();view();queueStatusUpdate()}
+function tab(t){ $('#p-view').hidden=false; $('#p-edit').hidden=true; }
+const DEF=/^ตอนที่ \d+$/;
+const epTip=x=>{   // ข้อความตอนเอาเมาส์ชี้แท็บ: ชื่อเต็ม · ถ้านำเข้าจากไฟล์ จะบอกชื่อไฟล์เต็มด้วย
+  const n=x.name||'ไม่มีชื่อ',f=String(x.file||'');
+  if(!f)return n;
+  const same=[f,f.replace(/\.[^.]+$/,''),f.replace(/\.(?:docx?|txt|pdf)$/i,'')].some(v=>{v=v.trim();return n===v||n===v.slice(0,40)});
+  return same?f:'ชื่อบท: '+n+'\nไฟล์: '+f;
+};
+function updateStatusBar(){
+  const title=$('#statusTitle');
+  if(title) title.textContent=S.eps.length?(E().name||'ไม่มีชื่อบท'):'ยังไม่มีบท';
+  const out=$('#out'), bar=$('#statusbar');
+  const barBottom=bar?bar.getBoundingClientRect().bottom:0;
+  const outRect=out?out.getBoundingClientRect():null;
+  const startScroll=outRect?window.scrollY+outRect.top-barBottom:0;
+  const endScroll=outRect?window.scrollY+outRect.bottom-window.innerHeight:0;
+  const range=Math.max(0,endScroll-startScroll);
+  const atBottom=outRect ? (range<=2 ? outRect.bottom<=window.innerHeight+3 : window.scrollY>=endScroll-3) : true;
+  const pct=atBottom?100:(range>0?Math.max(0,Math.min(100,Math.round((window.scrollY-startScroll)/range*100))):0);
+  const pl=$('#progressLabel'),fill=$('#progressFill'),track=$('#progressTrack');
+  if(pl)pl.textContent='ความคืบหน้า '+pct+'%';
+  if(fill)fill.style.width=pct+'%';
+  if(track)track.setAttribute('aria-valuenow',String(pct));
+  let remaining=0;
+  if(out){
+    const rows=[...out.querySelectorAll('.ln')].filter(el=>el.querySelector('.tag')||el.classList.contains('ct'));
+    if(!atBottom) remaining=rows.filter(el=>el.getBoundingClientRect().top>=barBottom+2).length;
+  }
+  const rl=$('#remainingLabel');if(rl)rl.textContent='เหลือ '+remaining+' บรรทัด';
+}
+let statusUpdateQueued=false;
+function queueStatusUpdate(){if(statusUpdateQueued)return;statusUpdateQueued=true;requestAnimationFrame(()=>{statusUpdateQueued=false;updateStatusBar()})}
+window.addEventListener('scroll',queueStatusUpdate,{passive:true});
+window.addEventListener('resize',queueStatusUpdate,{passive:true});
+document.addEventListener('scroll',queueStatusUpdate,{passive:true});
+function renderEps(scroll){
+  const has=S.eps.length>0;
+  $('#eps').innerHTML=S.eps.map((x,i)=>`<div role="tab" tabindex="0" class="ept" aria-selected="${i===S.cur}" data-i="${i}" title="${esc(epTip(x))}"><span class="eptname">${esc(x.name||'ไม่มีชื่อ')}</span><button class="epx" type="button" data-del="${i}" aria-label="ลบบท ${esc(x.name||'ไม่มีชื่อ')}" title="ปิดบท">×</button></div>`).join('');
+  // ผูก click กับปุ่มปิดแต่ละปุ่มโดยตรง เพื่อให้ทำงานได้แม้ตัวครอบ/แท็บดัก event ไว้
+  $('#eps').querySelectorAll('button.epx').forEach(btn=>{
+    btn.addEventListener('click',function(ev){
+      ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation();
+      const tabEl=this.closest('.ept');
+      if(!tabEl)return;
+      deleteEpisode(Number(tabEl.dataset.i));
+    });
+    btn.addEventListener('pointerdown',ev=>ev.stopPropagation());
+    btn.addEventListener('touchend',ev=>{ev.stopPropagation()}, {passive:true});
+  });
+  const nm=$('#statusTitle');
+  nm.textContent=has?(E().name||'ไม่มีชื่อบท'):'ยังไม่มีบท';
+  if(has)nm.title=epTip(E());else nm.removeAttribute('title');
+  updateStatusBar();
+  $('#epbar').hidden=!has;
+  $('#epAdd').classList.add('pri');
+  if(scroll){const a=$('#eps .ept[aria-selected="true"]');if(a&&a.scrollIntoView)a.scrollIntoView({block:'nearest',inline:'nearest'})}
+}
+function loadEp(){
+  active=null;
+  $('#src').value=E().text;$('#epInput').value=E().name;
+  renderEps(true);refresh();
+  $('#p-view').hidden=false; $('#p-edit').hidden=true;
+}
+function addEp(name,text,file){
+  let n=S.eps.length+1;const used=new Set(S.eps.map(e=>e.name));
+  if(!name){while(used.has('ตอนที่ '+n))n++;name='ตอนที่ '+n}
+  S.eps.push({name,text:text||'',file:String(file||'').slice(0,255)});S.cur=S.eps.length-1;loadEp();save();
+}
+function deleteEpisode(i){
+  i=Number(i);
+  if(!Number.isInteger(i)||i<0||i>=S.eps.length)return;
+  // ปิดแท็บที่เลือกได้ทันที รวมถึงแท็บสุดท้าย
+  S.eps.splice(i,1);
+  S.cur=S.eps.length?Math.min(i,S.eps.length-1):0;
+  active=null;
+  save();
+  loadEp();
+}
+$('#eps').addEventListener('click',e=>{
+  if(e.target.closest('button.epx'))return; // ปุ่มปิดจัดการเองโดยตรง
+  const b=e.target.closest('.ept');if(!b)return;
+  S.cur=Number(b.dataset.i);loadEp();save();
+});
+$('#eps').addEventListener('keydown',e=>{
+  if(e.target.closest('button.epx'))return;
+  const b=e.target.closest('.ept');if(b&&(e.key==='Enter'||e.key===' ')){e.preventDefault();S.cur=Number(b.dataset.i);loadEp();save()}
+});
+$('#epAdd').onclick=()=>$('#file').click(); // ปุ่ม + เพิ่มบท = เลือกไฟล์บทและนำเข้าเป็นแท็บใหม่ ไม่สร้างแท็บเปล่า
+$('#epInput').addEventListener('input',e=>{if(!S.eps.length)return;E().name=e.target.value;renderEps(false);save()});
+$('#src').addEventListener('input',e=>{
+  if(!S.eps.length){if(e.target.value.trim())addEp('',e.target.value);return}   // วาง/พิมพ์บทตอนที่ยังไม่มีบท → สร้างบทให้เอง
+  E().text=e.target.value;refresh();save();
+});
+async function docxText(buf){
+  const b=new Uint8Array(buf),u=new DataView(buf),td=new TextDecoder();
+  let e=b.length-22;
+  while(e>=0&&u.getUint32(e,true)!==0x06054b50)e--;
+  if(e<0)throw new Error('zip');
+  const n=u.getUint16(e+10,true);
+  let p=u.getUint32(e+16,true),xml=null;
+  for(let i=0;i<n&&xml===null;i++){
+    const fl=u.getUint16(p+28,true),xl=u.getUint16(p+30,true),cl=u.getUint16(p+32,true);
+    if(td.decode(b.subarray(p+46,p+46+fl))==='word/document.xml'){
+      const off=u.getUint32(p+42,true),cs=u.getUint32(p+20,true);
+      const s=off+30+u.getUint16(off+26,true)+u.getUint16(off+28,true),raw=b.subarray(s,s+cs);
+      const data=u.getUint16(p+10,true)===0?raw:new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+      xml=td.decode(data);
+    }
+    p+=46+fl+xl+cl;
+  }
+  if(xml===null)throw new Error('xml');
+  const d=new DOMParser().parseFromString(xml,'application/xml');
+  const txt=el=>{let s='';for(const c of el.children){const k=c.localName;s+=k==='t'?c.textContent:k==='tab'?'\t':(k==='br'||k==='cr')?'\n':txt(c)}return s};
+  const cell=tc=>[...tc.children].filter(x=>x.localName==='p').map(txt).join(' ').replace(/\s+/g,' ').trim();
+  const out=[];
+  for(const el of d.getElementsByTagNameNS('*','body')[0].children){
+    if(el.localName==='tbl'){
+      for(const tr of el.children){
+        if(tr.localName!=='tr')continue;
+        const c=[...tr.children].filter(x=>x.localName==='tc').map(cell);
+        if(!c.some(Boolean))continue;
+        out.push(c.length<2?c[0]:c.slice(0,-2).concat(c[c.length-2]+': '+c[c.length-1]).join(' '));
+      }
+    }else if(el.localName==='p')out.push(txt(el));
+  }
+  return out.join('\n');
+}
+function docText(buf){
+  const b=new Uint8Array(buf),dv=new DataView(buf),u32=(d,o)=>d.getUint32(o,true),u16=(d,o)=>d.getUint16(o,true);
+  if(b.length<512||u32(dv,0)!==0xE011CFD0)throw new Error('ole');
+  const ss=1<<u16(dv,0x1E),ms=1<<u16(dv,0x20),NIL=0xFFFFFFFA;
+  const sec=id=>new Uint8Array(buf,(id+1)*ss,ss);
+  const words=id=>{const s=sec(id),d=new DataView(s.buffer,s.byteOffset,ss),a=[];for(let i=0;i<ss/4;i++)a.push(d.getUint32(i*4,true));return a};
+  let fat=[];
+  for(let i=0;i<109;i++){const id=u32(dv,0x4C+i*4);if(id<NIL)fat=fat.concat(words(id))}
+  let dif=u32(dv,0x44),nd=u32(dv,0x48);
+  while(nd-->0&&dif<NIL){const w=words(dif);dif=w.pop();w.forEach(id=>{if(id<NIL)fat=fat.concat(words(id))})}
+  const chain=(s,t)=>{const r=[];let id=s;while(id<NIL&&r.length<1e6){r.push(id);id=t[id]}return r};
+  const join=(parts,len)=>{const o=new Uint8Array(parts.reduce((a,p)=>a+p.length,0));let k=0;parts.forEach(p=>{o.set(p,k);k+=p.length});return o.subarray(0,len)};
+  const big=(s,len)=>join(chain(s,fat).map(sec),len);
+  const dir=big(u32(dv,0x30),Infinity),dd=new DataView(dir.buffer,dir.byteOffset,dir.length),ents=[];
+  for(let o=0;o+128<=dir.length;o+=128){
+    const nl=dd.getUint16(o+64,true);
+    ents.push({name:new TextDecoder('utf-16le').decode(dir.subarray(o,o+Math.max(0,nl-2))),type:dir[o+66],start:dd.getUint32(o+116,true),size:dd.getUint32(o+120,true)});
+  }
+  const root=ents.find(e=>e.type===5);
+  let mfat=[];chain(u32(dv,0x3C),fat).forEach(id=>{mfat=mfat.concat(words(id))});
+  const mini=root?big(root.start,root.size):new Uint8Array(0),cutoff=u32(dv,0x38);
+  const stream=name=>{
+    const e=ents.find(x=>x.name===name&&x.type===2);if(!e)return null;
+    return e.size<cutoff?join(chain(e.start,mfat).map(id=>mini.subarray(id*ms,id*ms+ms)),e.size):big(e.start,e.size);
+  };
+  const wd=stream('WordDocument');if(!wd)throw new Error('word');
+  const w=new DataView(wd.buffer,wd.byteOffset,wd.length);
+  if(u16(w,0)!==0xA5EC)throw new Error('fib');
+  const fl=u16(w,0x0A);if(fl&0x0100)throw new Error('encrypted');
+  const tb=stream((fl&0x0200)?'1Table':'0Table');if(!tb)throw new Error('table');
+  const t=new DataView(tb.buffer,tb.byteOffset,tb.length);
+  let pos=0x20;pos+=2+u16(w,pos)*2;
+  const lw=pos+2;pos=lw+u16(w,pos)*4;
+  const fcs=pos+2,ccp=u32(w,lw+12),fcClx=u32(w,fcs+33*8);
+  let p=fcClx;
+  while(t.getUint8(p)===1)p+=3+u16(t,p+1);
+  if(t.getUint8(p)!==2)throw new Error('clx');
+  const n=((u32(t,p+1)-4)/12)|0,pl=p+5;
+  const dec16=new TextDecoder('utf-16le'),dec8=new TextDecoder(u16(w,6)===0x041E?'windows-874':'windows-1252');
+  let txt='';
+  for(let i=0;i<n;i++){
+    const c0=u32(t,pl+i*4);if(c0>=ccp)break;
+    const len=Math.min(u32(t,pl+(i+1)*4),ccp)-c0,raw=u32(t,pl+(n+1)*4+i*8+2);
+    if(raw&0x40000000){const o=(raw&0x3FFFFFFF)>>1;txt+=dec8.decode(wd.subarray(o,o+len))}
+    else{const o=raw&0x3FFFFFFF;txt+=dec16.decode(wd.subarray(o,o+len*2))}
+  }
+  txt=txt.replace(/\x13[^\x14\x15]*\x15/g,'').replace(/\x13[^\x15]*?\x14/g,'').replace(/[\x13\x14\x15\x01\x08]/g,'').replace(/[\x0B\x0C]/g,'\n').replace(/\x1E/g,'-').replace(/[\x00-\x06\x0E-\x1F]/g,'');
+  // แยกย่อหน้า (\r) และเซลล์ตาราง (\x07) ตัวท้ายแถวคือเซลล์ว่าง จึงหาจำนวนคอลัมน์จากรูปแบบนี้
+  const lines=[];let U=[],cur='';
+  const cols=()=>{
+    const L=U.length;if(!L)return 0;
+    for(const N of [2,3,4,5,6,7,8,9,10,11,12,1]){
+      if(L%(N+1))continue;
+      let ok=true;for(let k=N;k<L;k+=N+1)if(U[k]!=='')ok=false;
+      if(ok)return N;
+    }
+    return 0;
+  };
+  const flush=()=>{
+    if(!U.length)return;
+    const N=cols(),rows=[];
+    if(N){for(let k=0;k+N<=U.length;k+=N+1)rows.push(U.slice(k,k+N))}
+    else{let r=[];U.forEach(x=>{if(x===''){rows.push(r);r=[]}else r.push(x)});if(r.length)rows.push(r)}
+    rows.forEach(r=>{
+      const c=r.map(x=>x.replace(/\s+/g,' ').trim());
+      if(!c.some(Boolean))return;
+      lines.push((c.length<2?c[0]:c.slice(0,-2).concat(c[c.length-2]+': '+c[c.length-1]).join(' ')).trim());
+    });
+    U=[];
+  };
+  for(const seg of txt.split(/(?<=[\r\x07])/)){
+    const last=seg.slice(-1),isCell=last==='\x07',text=(isCell||last==='\r')?seg.slice(0,-1):seg;
+    if(isCell){U.push(cur+(cur&&text?' ':'')+text);cur=''}
+    else if(U.length&&(cur!==''||!cols()))cur+=(cur&&text?' ':'')+text;
+    else{flush();lines.push(text)}
+  }
+  flush();
+  return lines.join('\n');
+}
+const readDoc=async b=>new Uint8Array(b,0,1)[0]===0x50?docxText(b):docText(b);
+const fileTitle=f=>(f.disp?String(f.disp).replace(/\.(?:docx?|txt|pdf)$/i,''):f.name.replace(/\.[^.]+$/,'')).trim().slice(0,40);   // f.disp = ชื่อจริงบน Drive
+let pdfLibPromise=null;
+async function pdfText(buf){
+  // โหลด PDF.js เฉพาะเมื่อผู้ใช้เลือก PDF เพื่อไม่ให้ไฟล์ HTML ค้างตอนเปิดแบบออฟไลน์
+  if(!window.pdfjsLib){
+    if(!pdfLibPromise)pdfLibPromise=new Promise((resolve,reject)=>{
+      const sc=document.createElement('script');
+      sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      sc.onload=()=>window.pdfjsLib?resolve(window.pdfjsLib):reject(new Error('โหลดตัวอ่าน PDF ไม่สำเร็จ'));
+      sc.onerror=()=>reject(new Error('การอ่าน PDF ต้องเชื่อมต่ออินเทอร์เน็ตเพื่อติดตั้งตัวอ่าน PDF.js'));
+      document.head.appendChild(sc);
+    });
+    await pdfLibPromise;
+  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise;
+  const pages=[];
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i),content=await page.getTextContent();let line='',lastY=null,lines=[];
+    for(const item of content.items){if(!item.str)continue;const y=item.transform?item.transform[5]:null;if(lastY!==null&&y!==null&&Math.abs(y-lastY)>3){lines.push(line);line=''}line+=(line?' ':'')+item.str;lastY=y}
+    if(line)lines.push(line);pages.push(lines.join('\n'));
+  }
+  const text=pages.join('\n\n');if(!text.trim())throw new Error('ไม่พบข้อความใน PDF อาจเป็นไฟล์สแกนที่ต้องใช้ OCR');return text;
+}
+async function importFile(f,asNew){
+  if(!f)return false;
+  let ok=false;
+  const done=t=>{
+    // ทุกครั้งที่นำเข้าจากไฟล์ ให้เปิดเป็นแท็บบทใหม่เสมอ ไม่เขียนทับบทที่กำลังเปิดอยู่
+    addEp(fileTitle(f),t,f.disp||f.name);
+    tab('view');
+    ok=true;
+  };
+  if(/\.pdf$/i.test(f.name)){
+    try{done(await pdfText(await f.arrayBuffer()))}
+    catch(err){dvSay('อ่าน PDF ไม่สำเร็จ: '+(err&&err.message||'ไฟล์อาจเสียหรือเป็นไฟล์สแกน'),true)}
+  }else if(/\.docx?$/i.test(f.name)){
+    try{done(await readDoc(await f.arrayBuffer()))}
+    catch(err){tab('view');dvSay('เปิดไฟล์ไม่ได้ ไฟล์อาจเสีย มีรหัสผ่าน หรือไม่ใช่ไฟล์ Word (.doc / .docx)',true)}
+  }else{
+    await new Promise(res=>{
+      const r=new FileReader();
+      r.onload=()=>{try{done(String(r.result).replace(/\r\n?/g,'\n'))}finally{res()}};
+      r.onerror=()=>{tab('view');dvSay('เปิดไฟล์ไม่ได้',true);res()};
+      r.readAsText(f);
+    });
+  }
+  return ok;
+}
+$('#file').onchange=e=>{const f=e.target.files[0];e.target.value='';importFile(f,false)};
+
+// ---- Google Drive · สำรองข้อมูล · กู้คืน · รับไฟล์จากแอป Drive ("เปิดด้วย") ----
+const APP=(window.AndroidBridge&&typeof window.AndroidBridge.saveText==='function')?window.AndroidBridge:null;   // เปิดอยู่ในแอป Android
+let dvDL=null;   // ความสามารถ "downloads" ของ Claude (เมื่อเปิดเป็น Artifact บน claude.ai)
+try{if(window.claude&&typeof window.claude.use==='function')window.claude.use('downloads').then(v=>{dvDL=v},()=>{})}catch(e){}
+let dvRes=null,dvSnap=null;
+const dvBox=$('#dvBox'),dvMsg=$('#dvMsg');
+function dvSay(t,err,act){
+  dvMsg.className='dvmsg'+(err?' err':'');dvMsg.textContent=t||'';
+  if(t&&act){const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=act.label;b.onclick=act.fn;dvMsg.append(' ',b)}
+  if(t&&err&&!$('#p-edit').hidden&&dvMsg.scrollIntoView)dvMsg.scrollIntoView({block:'nearest'});
+}
+const dvStamp=t=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+(t?'-'+p(d.getHours())+p(d.getMinutes()):'')};
+const dvBackupText=()=>JSON.stringify({app:'dubbing-highlighter',v:3,savedAt:new Date().toISOString(),state:S});
+// บันทึกไฟล์ออกจากโปรแกรม: แอป Android (หน้าต่างบันทึกไฟล์ของระบบ เลือก Drive ได้) → Claude (downloads) → ตัวเลือกที่เก็บไฟล์ของเบราว์เซอร์ → ลิงก์ดาวน์โหลด
+async function dvSaveOut(name,mime,text){
+  if(APP){
+    if(window.__dhSaved){try{window.__dhSaved(false,'cancel')}catch(e){}}
+    const r=await new Promise(res=>{
+      window.__dhSaved=(ok,info)=>{window.__dhSaved=null;res({ok:!!ok,info:String(info==null?'':info)})};
+      let go=false;try{go=!!APP.saveText(name,mime,text)}catch(e){}
+      if(!go){window.__dhSaved=null;res({ok:false,info:'error'})}
+    });
+    return r.ok?{ok:true,name:r.info||name,how:'app'}:r.info==='cancel'?{ok:false,cancel:true}:{ok:false};
+  }
+  if(dvDL){
+    try{await dvDL.save({filename:name,data:text});return {ok:true,name,how:'claude'}}
+    catch(e){return e&&e.code==='declined'?{ok:false,cancel:true}:{ok:false}}
+  }
+  if(typeof window.showSaveFilePicker==='function'){
+    try{
+      const h=await window.showSaveFilePicker({suggestedName:name,types:[{description:'ไฟล์สำรอง The Dubbing Highlighter',accept:{'application/json':['.json']}}]});
+      const w=await h.createWritable();await w.write(text);await w.close();
+      return {ok:true,name:h.name||name,how:'picker'};
+    }catch(e){if(e&&e.name==='AbortError')return {ok:false,cancel:true}}
+  }
+  try{
+    const a=document.createElement('a'),u=URL.createObjectURL(new Blob([text],{type:mime}));
+    a.href=u;a.download=name;a.hidden=true;document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},4000);
+    return {ok:true,name,how:'download'};
+  }catch(e){return {ok:false}}
+}
+async function dvBackup(){
+  const b=$('#dvSave');b.disabled=true;dvSay('');
+  try{
+    const text=dvBackupText();
+    const r=await dvSaveOut('The-Dubbing-Highlighter-backup-'+dvStamp()+'.json','application/json',text);
+    if(r.ok)dvSay(r.how==='download'?'เริ่มดาวน์โหลดไฟล์สำรองแล้ว (ดูในโฟลเดอร์ดาวน์โหลด) แล้วนำไปเก็บไว้ใน Google Drive ได้':'บันทึกไฟล์สำรองแล้ว: '+r.name);
+    else if(r.cancel)dvSay('ยกเลิกการบันทึก');
+    else dvSay('บันทึกไฟล์สำรองไม่สำเร็จ ลองอีกครั้ง',true);
+  }finally{b.disabled=false}
+}
+// ตรวจไฟล์สำรอง: รับเฉพาะรูปแบบที่ถูกต้อง สีต้องเป็นรหัส #hex เท่านั้น (ไฟล์อาจมาจากคนอื่น)
+const dvHex=/^#[0-9a-f]{3,8}$/i;
+function dvClean(raw){
+  const s=raw&&typeof raw==='object'&&raw.app==='dubbing-highlighter'&&raw.state?raw.state:raw;
+  if(!s||typeof s!=='object'||!Array.isArray(s.eps)||!s.eps.length)return null;
+  const eps=s.eps.slice(0,500).map(e=>({name:String((e&&e.name)||'').slice(0,40),text:String((e&&e.text)||''),file:String((e&&e.file)||'').slice(0,255)}));
+  const colors={},pick={},extra=[];
+  if(s.colors&&typeof s.colors==='object')Object.keys(s.colors).slice(0,3000).forEach(n=>{if(n!=='__proto__'&&dvHex.test(String(s.colors[n])))colors[n]=String(s.colors[n])});
+  if(s.pick&&typeof s.pick==='object')Object.keys(s.pick).slice(0,3000).forEach(n=>{if(n!=='__proto__'&&s.pick[n]===true)pick[n]=true});
+  if(Array.isArray(s.extra))s.extra.slice(0,500).forEach(n=>{n=String(n);if(n&&n.length<=30&&n!=='__proto__'&&!extra.includes(n))extra.push(n)});
+  const o=(s.opt&&typeof s.opt==='object')?s.opt:{};
+  return {eps,cur:Math.min(Math.max(0,Math.round(+s.cur)||0),eps.length-1),colors,pick,extra,full:!!o.full,cont:o.cont!==false,size:Math.min(25,Math.max(14,Math.round(+o.size)||18))};
+}
+function dvBegin(text,fname){
+  let o=null;try{o=JSON.parse(text)}catch(e){}
+  const c=dvClean(o);
+  if(!c){dvRes=null;dvBox.hidden=true;dvSay('เปิดไฟล์สำรองไม่ได้ ไฟล์อาจเสียหรือไม่ใช่ไฟล์สำรองของโปรแกรมนี้',true);return false}
+  dvRes=c;
+  let when='';try{const d=new Date(o&&o.savedAt);if(o&&o.savedAt&&!isNaN(d))when=' · บันทึกเมื่อ '+d.toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}catch(e){}
+  $('#dvBoxTxt').textContent='ไฟล์สำรอง “'+fname+'” มี '+c.eps.length+' บท'+when+' · ตอนนี้ในเครื่องมี '+S.eps.length+' บท';
+  dvBox.hidden=false;dvSay('');
+  return true;
+}
+function dvSet(c){
+  S.eps=c.eps;S.cur=c.cur;S.colors=c.colors;S.pick=c.pick;S.extra=c.extra;S.opt.full=c.full;S.opt.cont=c.cont;S.opt.size=c.size;
+  $('#o-speech').checked=S.opt.full&&S.opt.cont!==false;$('#o-size').value=S.opt.size;
+}
+function dvUndo(){
+  if(!dvSnap)return;
+  let o=null;try{o=JSON.parse(dvSnap)}catch(e){}
+  dvSnap=null;if(!o)return;
+  S=o;$('#o-speech').checked=S.opt.full&&S.opt.cont!==false;$('#o-size').value=S.opt.size;
+  active=null;loadEp();applyLayout();save();dvSay('ย้อนกลับแล้ว');
+}
+$('#dvRepl').onclick=()=>{
+  if(!dvRes)return;
+  dvSnap=JSON.stringify(S);const c=dvRes;dvRes=null;dvBox.hidden=true;
+  dvSet(c);active=null;loadEp();save();
+  dvSay('กู้คืนข้อมูลแล้ว ('+S.eps.length+' บท)',false,{label:'ย้อนกลับ',fn:dvUndo});
+};
+$('#dvMerge').onclick=()=>{
+  if(!dvRes)return;
+  const c=dvRes;dvRes=null;dvBox.hidden=true;
+  dvSnap=JSON.stringify(S);
+  let add=0;
+  c.eps.forEach(e=>{if(!S.eps.some(x=>x.name===e.name&&x.text===e.text)){S.eps.push(e);add++}});
+  Object.keys(c.colors).forEach(n=>{if(!(n in S.colors)){S.colors[n]=c.colors[n];if(c.pick[n])S.pick[n]=true}});
+  c.extra.forEach(n=>{if(!S.extra.includes(n))S.extra.push(n)});
+  if(!add){dvSnap=null;dvSay('ทุกบทในไฟล์สำรองมีอยู่ในเครื่องแล้ว จึงไม่มีอะไรเพิ่ม');return}
+  S.cur=S.eps.length-add;active=null;loadEp();save();
+  dvSay('เพิ่ม '+add+' บทจากไฟล์สำรองแล้ว (ไม่ลบของเดิม)',false,{label:'ย้อนกลับ',fn:dvUndo});
+};
+$('#dvCancel').onclick=()=>{dvRes=null;dvBox.hidden=true;dvSay('')};
+$('#dvSave').onclick=dvBackup;
+$('#dvPick').onclick=()=>$('#file4').click();
+$('#dvRestore').onclick=()=>$('#file3').click();
+$('#file4').onchange=e=>{const f=e.target.files[0];e.target.value='';importFile(f,true)};
+$('#file3').onchange=e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>dvBegin(String(r.result),f.name);
+  r.onerror=()=>dvSay('เปิดไฟล์สำรองไม่ได้',true);
+  r.readAsText(f);
+};
+// ไฟล์ที่แอป Android ส่งมา (Drive → เปิดด้วย / แชร์) · แอปเก็บไว้ให้ก่อน แล้วหน้านี้มาหยิบไปทีละไฟล์
+const dvBytes=b64=>{const s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u};
+function dvName(name,u8,mime){
+  const n=String(name||'').replace(/[\\/:*?"<>|\u0000-\u001f]+/g,'_').trim()||'ไฟล์จาก Drive';
+  if(/\.(docx?|txt|json)$/i.test(n))return n;
+  const sig=(...a)=>a.every((v,i)=>u8[i]===v);
+  if(sig(0x50,0x4B,3,4))return n+'.docx';
+  if(sig(0xD0,0xCF,0x11,0xE0))return n+'.doc';
+  return n+(/json/i.test(mime||'')?'.json':'.txt');
+}
+async function dvOpenIn(f){
+  if(/\.json$/i.test(f.name)){
+    const t=await f.text();
+    tab('edit');
+    const ok=dvBegin(t,f.name);
+    if(ok)$('#drive').scrollIntoView({block:'nearest'});
+    return ok;
+  }
+  return importFile(f,true);
+}
+window.__dhIncoming=async function(){
+  if(!APP||typeof APP.takePending!=='function')return;
+  let raw='';try{raw=String(APP.takePending()||'')}catch(e){}
+  if(!raw)return;
+  let o=null;try{o=JSON.parse(raw)}catch(e){}
+  if(!o||o.err){tab('edit');dvSay('เปิดไฟล์ที่ส่งมาจาก Drive ไม่ได้ ลองกด “เลือกบทจาก Drive” แทน',true);return}
+  try{
+    const u8=dvBytes(o.b64||'');
+    await dvOpenIn(new File([u8],dvName(o.name,u8,o.mime),{type:o.mime||''}));
+  }catch(e){tab('view');dvSay('เปิดไฟล์ที่ส่งมาจาก Drive ไม่ได้ ลองกด “เลือกบทจาก Drive” แทน',true)}
+};
+function dvHints(){
+  const L=gdMcp?[
+    'เปิดบทจาก Google Drive: แตะ “เปิดบทจาก Google Drive” แล้วเลือกไฟล์ .docx / .doc / .txt หรือ Google Docs (เพิ่มเป็นบทใหม่ให้ทันที) · มีแท็บ ล่าสุด / ติดดาว / ไดรฟ์ของฉัน / แชร์กับฉัน และแตะโฟลเดอร์เพื่อเปิดดูข้างในได้เหมือนบนเว็บ Google Drive',
+    'สำรองข้อมูล: แตะ “บันทึกสำรองลง Google Drive” จะสร้างไฟล์สำรอง (.json) ไว้ใน My Drive · กู้คืนด้วย “กู้คืนจาก Google Drive”',
+    'ครั้งแรก Claude จะถามขออนุญาตให้หน้านี้ใช้ Google Drive · หน้านี้แสดงรายชื่อไฟล์ อ่านเฉพาะไฟล์ที่คุณแตะเลือก และสร้างไฟล์ใน Drive เฉพาะตอนที่คุณกดบันทึกสำรอง'
+  ]:APP?[
+    'เลือกบทจาก Drive: แตะ “เลือกบทจาก Drive” → ในหน้าเลือกไฟล์ แตะเมนู ≡ มุมซ้ายบน → เลือก Drive',
+    'เปิดจากแอป Drive: แตะ ⋮ ข้างไฟล์ .docx / .doc / .txt → เปิดด้วย → The Dubbing Highlighter (เพิ่มเป็นบทใหม่ให้ทันที)',
+    'สำรองข้อมูล: แตะ “สำรองข้อมูลไป Drive” → เลือก Drive แล้วแตะบันทึก · ไฟล์สำรองเก็บทุกบท สี และตัวละครที่เลือกไว้ ใช้ย้ายไปเครื่องอื่นได้'
+  ]:[
+    'เลือกบทจาก Drive: แตะ “เลือกบทจาก Drive” แล้วเลือกไฟล์ในหน้าเลือกไฟล์ (มือถือ: เมนู ≡ → Drive · คอมพิวเตอร์: โฟลเดอร์ Google Drive)',
+    'สำรองข้อมูล: แตะ “ดาวน์โหลดไฟล์สำรอง” แล้วนำไฟล์ไปเก็บไว้ใน Google Drive · ไฟล์สำรองเก็บทุกบท สี และตัวละครที่เลือกไว้',
+    'กู้คืน: แตะ “กู้คืนจากไฟล์สำรอง” แล้วเลือกไฟล์ .json ที่สำรองไว้'
+  ];
+  const ul=$('#dvHint');ul.textContent='';
+  L.forEach(t=>{const li=document.createElement('li');li.textContent=t;ul.appendChild(li)});
+}
+function dvInit(){
+  dvHints();
+  $('#dvSave').textContent=APP?'สำรองข้อมูลไป Drive':'ดาวน์โหลดไฟล์สำรอง';
+  // ปิดการนำเข้าอัตโนมัติจาก Google Drive / เปิดด้วย
+}
+
+// ---- Google Drive ผ่านตัวเชื่อมต่อของ Claude (ใช้ได้เมื่อเปิดเป็น Artifact บน claude.ai และผู้ใช้อนุญาตแล้ว) ----
+// เรียกผ่าน claude.use('mcp') · ไม่มี token อยู่ในหน้านี้ · ถ้าใช้ไม่ได้ ส่วนนี้จะไม่แสดงเลย
+const GD='Google Drive';
+const GD_DOC='application/vnd.google-apps.document',GD_DOCX='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+const GD_KINDS=Object.assign(Object.create(null),{
+  [GD_DOC]:{k:'gdoc',t:'Google Docs'},
+  [GD_DOCX]:{k:'docx',t:'Word (.docx)'},
+  'application/msword':{k:'doc',t:'Word (.doc)'},
+  'text/plain':{k:'txt',t:'ข้อความ (.txt)'},
+  'application/json':{k:'json',t:'ไฟล์สำรอง (.json)'}
+});
+const GD_EXT=Object.assign(Object.create(null),{docx:GD_DOCX,doc:'application/msword',txt:'text/plain',json:'application/json'});
+const GD_MAX=15*1024*1024,GD_INLINE=600*1024,GD_FILE_MAX=16*1024*1024,GD_LIST_MAX=500,GD_PAGES=10;
+const GD_FOLDER='application/vnd.google-apps.folder';
+const GD_SRC={recent:'ล่าสุด',starred:'ติดดาว',mine:'ไดรฟ์ของฉัน',shared:'แชร์กับฉัน'};
+let gdMcp=null,gdBusy=false,gdSeq=0,gdMode='script',gdQ='',gdTok=null,gdItems=[],gdSrc='recent',gdPrefSrc='recent',gdPath=[],gdSort='name',gdAll=false;
+// แหล่งไฟล์ที่เปิดล่าสุด · วิธีเรียง · แสดงไฟล์ชนิดอื่น (จำไว้ในเครื่องนี้ ใช้ไม่ได้ก็ไม่เป็นไร)
+const GD_PREF='dub-highlighter-gd';
+try{const p=JSON.parse(localStorage.getItem(GD_PREF)||'null');if(p&&typeof p==='object'){if(GD_SRC[p.src])gdPrefSrc=p.src;if(p.sort==='time')gdSort='time';gdAll=p.all===true}}catch(e){}
+const gdSavePref=()=>{try{localStorage.setItem(GD_PREF,JSON.stringify({src:gdPrefSrc,sort:gdSort,all:gdAll}))}catch(e){}};
+function gdKind(f){
+  const m=String(f&&f.mimeType||'').toLowerCase();
+  if(GD_KINDS[m])return GD_KINDS[m];
+  if(m&&/^(application\/vnd\.google-apps\.|image\/|video\/|audio\/)/.test(m))return null;
+  const x=String(f&&f.fileExtension||'').toLowerCase();   // ไฟล์ที่ Drive ไม่รู้ชนิด แต่นามสกุลถูกต้อง
+  return GD_EXT[x]?GD_KINDS[GD_EXT[x]]:null;
+}
+const gdIsFolder=f=>String(f&&f.mimeType||'')===GD_FOLDER;
+const gdWant=f=>{const k=gdKind(f);return !!k&&(gdMode==='backup'?k.k==='json':k.k!=='json')};
+const gdShow=f=>gdIsFolder(f)||gdAll||gdWant(f);   // โฟลเดอร์ + ไฟล์ที่เปิดได้ (หรือทุกชนิดถ้าติ๊ก “แสดงไฟล์ชนิดอื่นด้วย”)
+const gdMimes=()=>gdMode==='backup'?['application/json']:[GD_DOC,GD_DOCX,'application/msword','text/plain'];
+const gdQuote=s=>"'"+String(s).replace(/[\u0000-\u001f]+/g,' ').replace(/\\/g,'\\\\').replace(/'/g,"\\'")+"'";
+const gdTitle=f=>String(f&&(f.title||f.name)||'(ไม่มีชื่อ)');
+const gdWide=()=>!gdPath.length&&(gdSrc==='recent'||(gdSrc==='mine'&&!!gdQ));   // ค้นทั้งไดรฟ์ (ไม่จำกัดโฟลเดอร์)
+// คำค้นตามแหล่งที่เปิดอยู่: ติดดาว = starred · แชร์กับฉัน = sharedWithMe · ไดรฟ์ของฉัน = รายการใน root · เปิดโฟลเดอร์ = รายการในโฟลเดอร์นั้น · พิมพ์ค้นหา = เพิ่ม title contains
+function gdQuery(){
+  const c=[],wide=gdWide();
+  if(gdPath.length)c.push('parentId = '+gdQuote(gdPath[gdPath.length-1].id));
+  else if(gdSrc==='starred')c.push('starred = true');
+  else if(gdSrc==='shared')c.push('sharedWithMe = true');
+  else if(gdSrc==='mine'&&!gdQ)c.push("parentId = 'root'");
+  if(!(gdAll&&(!wide||gdQ))){   // จำกัดชนิดเป็นโฟลเดอร์ + ชนิดที่เปิดได้ (ยกเว้นติ๊ก “แสดงไฟล์ชนิดอื่นด้วย”)
+    const m=gdMimes();if(!(wide&&!gdQ))m.push(GD_FOLDER);
+    c.push('('+m.map(x=>'mimeType = '+gdQuote(x)).join(' or ')+')');
+  }
+  if(gdQ)c.push('title contains '+gdQuote(gdQ));
+  return c.join(' and ');
+}
+// ผลลัพธ์ของตัวเชื่อมต่อ: payload (JSON ที่แปลงแล้ว) · อ่านแบบหลวม ๆ เผื่อรูปแบบต่างกันเล็กน้อย
+function gdPayload(r){
+  if(r&&r.payload!==undefined)return r.payload;
+  if(r&&r.structuredContent!==undefined)return r.structuredContent;
+  const t=r&&Array.isArray(r.content)?r.content.find(b=>b&&b.type==='text'&&typeof b.text==='string'):null;
+  if(t){try{return JSON.parse(t.text)}catch(e){return t.text}}
+  return null;
+}
+const gdJson=p=>{if(typeof p==='string'){try{return JSON.parse(p)}catch(e){return null}}return p};
+function gdFilesOf(p){p=gdJson(p);const a=Array.isArray(p)?p:(p&&Array.isArray(p.files)?p.files:[]);return a.filter(f=>f&&typeof f==='object'&&typeof f.id==='string'&&f.id)}
+function gdNext(p){p=gdJson(p);const t=p&&typeof p==='object'&&!Array.isArray(p)?(p.nextPageToken||p.next_page_token):'';return typeof t==='string'&&t?t:null}
+const gdWait=ms=>new Promise(r=>setTimeout(r,ms));
+// อ่านข้อมูล: ไม่เก็บผลไว้ในแคช · ลองใหม่อัตโนมัติได้อีก 1 ครั้งเฉพาะข้อผิดพลาดที่ระบบบอกว่าลองซ้ำได้
+async function gdRead(tool,input){
+  for(let n=0;;n++){
+    if(!gdMcp)throw {code:'capability_disabled'};
+    try{return gdPayload(await gdMcp.callTool(GD,tool,input,{cache:false}))}
+    catch(e){
+      if(n===0&&e&&e.retryable===true){await gdWait(Math.min(5000,Math.max(700,+e.retryAfterMs||0))+Math.floor(Math.random()*500));continue}
+      throw e;
+    }
+  }
+}
+function gdB64(s){
+  s=String(s).replace(/\s+/g,'').replace(/-/g,'+').replace(/_/g,'/').replace(/=+$/,'');
+  while(s.length%4)s+='=';
+  return dvBytes(s);
+}
+async function gdDownload(id,exportMime){
+  const input={fileId:id};if(exportMime)input.exportMimeType=exportMime;
+  const o=gdJson(await gdRead('download_file_content',input));
+  if(!o||typeof o!=='object'||typeof o.content!=='string')throw {code:'shape'};
+  if(!o.content)throw {code:'empty'};
+  const u8=gdB64(o.content);
+  if(!u8.length)throw {code:'empty'};
+  return {u8,mime:typeof o.mimeType==='string'?o.mimeType:''};
+}
+const gdSize=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':n>=1024?Math.round(n/1024)+' KB':n+' B';
+function gdWhen(s){const d=new Date(s);return s&&!isNaN(d)?d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}):''}
+function gdSafeUrl(u){try{const x=new URL(String(u));return x.protocol==='https:'&&/(^|\.)google\.com$/i.test(x.hostname)?x.href:''}catch(e){return ''}}
+function gdStat(t,err,act){
+  const e=$('#gdStat');e.textContent=t||'';e.className='mut gdstat'+(err?' err':'');
+  if(t&&act){const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=act.label;b.onclick=act.fn;e.append(' ',b)}
+}
+function gdLock(on){gdBusy=on;$('#gdSave').disabled=on;$('#gdMore').disabled=on;$('#gdList').querySelectorAll('button:not(.na)').forEach(b=>{b.disabled=on})}
+function gdDetail(e){const m=String(e&&e.message||'').replace(/\s+/g,' ').trim().slice(0,160);return m?' ('+m+')':''}
+function gdMsg(e){
+  switch(e&&e.code){
+    case 'server_not_connected':case 'server_not_found':return 'ยังไม่ได้เชื่อมต่อ Google Drive กับบัญชี Claude ของคุณ · เพิ่มได้ที่ claude.ai → Settings → Connectors แล้วโหลดหน้านี้ใหม่';
+    case 'needs_reauth':return 'การเชื่อมต่อ Google Drive หมดอายุ · เชื่อมต่อใหม่ที่ claude.ai → Settings → Connectors แล้วลองอีกครั้ง';
+    case 'selection_required':return 'บัญชีนี้มี Google Drive มากกว่าหนึ่งการเชื่อมต่อ · เลือกอันที่จะใช้ในหน้าต่างที่ Claude แสดง แล้วลองอีกครั้ง';
+    case 'not_in_manifest':case 'consent_required':return 'หน้านี้ไม่ได้รับอนุญาตให้ใช้ Google Drive (อาจเพราะเลือก “ไม่อนุญาต” หรือปิดไว้) · เปิดสิทธิ์ได้ที่เมนู Permissions ของหน้านี้ใน Claude';
+    case 'approval_required':return 'ต้องได้รับอนุญาตก่อนใช้ Google Drive · แตะปุ่มอีกครั้งแล้วเลือก “อนุญาต”';
+    case 'blocked_by_policy':return 'องค์กรของคุณไม่อนุญาตให้ใช้ Google Drive ผ่านหน้านี้';
+    case 'server_unavailable':case 'upstream_error':case 'rate_limited':return 'Google Drive ไม่ตอบสนองชั่วคราว · ลองอีกครั้งในอีกสักครู่';
+    case 'cancelled':return 'ยกเลิกแล้ว';
+    case 'tool_error':return 'Google Drive แจ้งว่าทำรายการนี้ไม่ได้'+gdDetail(e);
+    case 'bad_request':case 'transform_error':return 'ส่งคำขอไปที่ Google Drive ไม่ถูกต้อง (ข้อผิดพลาดของโปรแกรม)';
+    case 'empty':return 'ไฟล์นี้ว่างเปล่า';
+    case 'shape':return 'ข้อมูลที่ได้จาก Google Drive อยู่ในรูปแบบที่โปรแกรมไม่รู้จัก';
+    default:return 'ติดต่อ Google Drive ไม่สำเร็จ · ลองอีกครั้ง';
+  }
+}
+// ถูกปฏิเสธ/ปิดสิทธิ์ไว้: ทางออกคือหน้าต่างจัดการสิทธิ์ของ Claude (เปิดเมื่อผู้ใช้กดปุ่มเท่านั้น)
+async function gdManage(say){
+  let pm=null;try{pm=await window.claude.use('permissions')}catch(e){}
+  if(!pm||typeof pm.manage!=='function'){say('เปิดสิทธิ์ได้ที่เมนู Permissions ของหน้านี้ใน Claude',true);return}
+  try{await pm.manage()}catch(e){say('เปิดหน้าต่างสิทธิ์ไม่ได้ · ใช้เมนู Permissions ของหน้านี้ใน Claude แทน',true);return}
+  say('ปรับสิทธิ์แล้ว · แตะปุ่ม Google Drive อีกครั้งเพื่อลองใหม่');
+}
+function gdAct(e,say){const c=e&&e.code;return c==='not_in_manifest'||c==='consent_required'?{label:'เปิดการตั้งค่าสิทธิ์',fn:()=>gdManage(say)}:null}
+// ใช้ผ่าน Claude ไม่ได้ในมุมมองนี้ → เก็บส่วนนี้ ให้เหลือปุ่มเลือก/ดาวน์โหลดไฟล์ในเครื่อง
+function gdLifecycle(e){const c=e&&e.code;return c==='not_granted'||c==='capability_disabled'||c==='capability_removed'||c==='user_changed'}
+function gdOff(){
+  gdMcp=null;gdSeq++;$('#gd').hidden=true;$('#gdPanel').hidden=true;$('#dvPick').textContent='เลือกบทจาก Drive';dvHints();
+  dvSay('ใช้ Google Drive ผ่าน Claude ไม่ได้ในมุมมองนี้ · ใช้ปุ่มเลือก/ดาวน์โหลดไฟล์ด้านล่างแทน',true);
+}
+let gdColl;try{gdColl=new Intl.Collator('th',{numeric:true,sensitivity:'base'})}catch(e){gdColl={compare:(a,b)=>a<b?-1:a>b?1:0}}
+const gdTime=f=>{const t=Date.parse(f&&f.modifiedTime);return isNaN(t)?0:t};
+function gdOrdered(){
+  const a=gdItems.slice();
+  if(gdSrc==='recent'&&!gdPath.length&&!gdQ&&gdMode==='script')return a;   // “ล่าสุด” คงลำดับที่ Drive ส่งมา
+  return a.sort((x,y)=>(gdIsFolder(y)-gdIsFolder(x))||(gdSort==='time'?gdTime(y)-gdTime(x):0)||gdColl.compare(gdTitle(x),gdTitle(y)));   // โฟลเดอร์ก่อน แล้วตามชื่อ / เวลาแก้ไข
+}
+const gdLabel=()=>gdMode==='backup'&&gdSrc==='recent'?'ไฟล์สำรอง':GD_SRC[gdSrc];
+const gdWhere=()=>gdPath.length?gdPath.map(x=>x.title).join(' › '):gdLabel();
+function gdUi(){   // แท็บแหล่งไฟล์ · เส้นทางโฟลเดอร์ · ตัวเลือก
+  $('#gdSrcs').querySelectorAll('button').forEach(b=>{
+    b.setAttribute('aria-selected',String(b.dataset.s===gdSrc));
+    if(b.dataset.s==='recent')b.textContent=gdMode==='backup'?'ไฟล์สำรอง':GD_SRC.recent;
+  });
+  const cr=$('#gdCrumb');cr.textContent='';
+  if(gdPath.length){
+    const add=(txt,fn)=>{const b=document.createElement('button');b.type='button';b.className='gdcb';b.textContent=txt;b.onclick=fn;cr.appendChild(b)};
+    const sep=()=>{const x=document.createElement('span');x.className='gdsep';x.textContent='›';x.setAttribute('aria-hidden','true');cr.appendChild(x)};
+    add('← ย้อนกลับ',()=>gdGoto(gdPath.length-1));
+    add(gdLabel(),()=>gdGoto(0));
+    gdPath.forEach((p,i)=>{
+      sep();
+      if(i===gdPath.length-1){const b=document.createElement('b');b.textContent=p.title;cr.appendChild(b)}
+      else add(p.title,()=>gdGoto(i+1));
+    });
+  }
+  cr.hidden=!gdPath.length;
+  $('#gdQ').placeholder=gdPath.length?'ค้นหาในโฟลเดอร์นี้':'ค้นหาจากชื่อไฟล์';
+  $('#gdSort').value=gdSort;$('#gdAll').checked=gdAll;
+  $('#gdSortWrap').hidden=gdSrc==='recent'&&!gdPath.length&&!gdQ&&gdMode==='script';
+}
+function gdRender(){
+  const ul=$('#gdList');ul.textContent='';
+  gdOrdered().forEach(f=>{
+    const fold=gdIsFolder(f),k=gdKind(f),ok=fold||(!!k&&gdWant(f)),li=document.createElement('li'),b=document.createElement('button');
+    b.type='button';b.className='gdrow'+(fold?' fold':'')+(ok?'':' na');
+    const t=document.createElement('span');t.className='t';t.textContent=gdTitle(f);
+    const sz=+f.fileSize,w=gdWhen(f.modifiedTime),m=document.createElement('span');
+    m.className='m';m.textContent=[fold?'โฟลเดอร์':k?k.t:'ชนิดอื่น (เปิดในโปรแกรมนี้ไม่ได้)',w?'แก้ไข '+w:'',!fold&&k&&sz>0&&k.k!=='gdoc'?gdSize(sz):''].filter(Boolean).join(' · ');
+    b.append(t,m);
+    if(ok)b.onclick=fold?()=>gdOpenFolder(f):()=>gdPick(f);else b.disabled=true;
+    li.appendChild(b);ul.appendChild(li);
+  });
+  $('#gdMore').hidden=!gdTok;
+}
+async function gdLoad(more){
+  const my=++gdSeq;
+  if(!more){gdItems=[];gdTok=null}
+  gdUi();gdRender();
+  gdStat('กำลังโหลดรายการจาก Google Drive… (ครั้งแรก Claude อาจถามขออนุญาต ให้เลือกอนุญาต)');
+  $('#gdMore').disabled=true;
+  try{
+    const recent=gdSrc==='recent'&&!gdPath.length&&!gdQ&&gdMode==='script';
+    let tok=more?gdTok:null,pages=0;
+    const seen=new Set(gdItems.map(f=>f.id));   // หน้าถัดไปอาจมีไฟล์ซ้ำกับหน้าก่อน
+    for(;;){   // โหลดทีละหน้าจนหมด (หรือครบเพดาน) เพื่อให้เรียงลำดับได้ครบเหมือนบนเว็บ
+      const input=recent?{pageSize:50,excludeContentSnippets:true}:{query:gdQuery(),pageSize:100,excludeContentSnippets:true};
+      if(tok)input.pageToken=tok;
+      const p=await gdRead(recent?'list_recent_files':'search_files',input);
+      if(my!==gdSeq)return;
+      const fs=gdFilesOf(p);pages++;
+      fs.filter(gdShow).forEach(f=>{if(!seen.has(f.id)&&gdItems.length<GD_LIST_MAX){seen.add(f.id);gdItems.push(f)}});
+      tok=gdNext(p);gdTok=tok;gdRender();
+      if(!tok||!fs.length)break;   // ไม่มีหน้าถัดไป หรือเจอหน้าว่าง (Drive ส่งหน้าว่างมาเมื่อหมดแล้ว)
+      if(recent?(gdItems.length>=8||pages>=4):(gdItems.length>=GD_LIST_MAX||pages>=GD_PAGES))break;
+      gdStat('กำลังโหลด… '+gdItems.length+' รายการ');
+    }
+    const capped=!!tok&&gdItems.length>=GD_LIST_MAX;
+    if(capped){tok=null;gdTok=null;gdRender()}   // ครบจำนวนสูงสุดที่แสดง → ให้ใช้ช่องค้นหาแทน
+    const nf=gdItems.filter(gdIsFolder).length,nfi=gdItems.length-nf,where=gdWhere();
+    if(!gdItems.length){
+      gdStat(tok?'ยังไม่พบรายการที่เปิดได้ในหน้านี้ · แตะ “แสดงเพิ่ม” หรือค้นหาจากชื่อไฟล์'
+        :gdQ?'ไม่พบรายการที่ชื่อมี “'+gdQ+'” ใน '+where+' · ลองพิมพ์คำสั้นลง หรือคำแรกของชื่อ'
+        :gdPath.length?'โฟลเดอร์นี้ไม่มีโฟลเดอร์ย่อยหรือไฟล์ที่เปิดได้ (.docx / .doc / .txt / Google Docs)'+(gdAll?'':' · ติ๊ก “แสดงไฟล์ชนิดอื่นด้วย” เพื่อดูทุกชนิด')
+        :gdMode==='backup'&&gdSrc==='recent'?'ยังไม่พบไฟล์สำรอง (.json) ใน Google Drive · กด “บันทึกสำรองลง Google Drive” เพื่อสร้างไฟล์สำรองก่อน'
+        :gdSrc==='starred'?'ยังไม่มีรายการติดดาวที่เปิดได้ใน Google Drive'+(gdAll?'':' · ติ๊ก “แสดงไฟล์ชนิดอื่นด้วย” เพื่อดูทุกชนิด')
+        :gdSrc==='shared'?'ยังไม่มีโฟลเดอร์หรือไฟล์ที่แชร์กับคุณ'
+        :gdSrc==='mine'?'ไม่พบโฟลเดอร์หรือไฟล์ที่เปิดได้ใน “ไดรฟ์ของฉัน”'
+        :'ไม่พบไฟล์ .docx / .doc / .txt หรือ Google Docs ล่าสุดใน Google Drive');
+    }else gdStat((gdQ?'ผลการค้นหา “'+gdQ+'” ใน ':'')+where+' · '+(nf?nf+' โฟลเดอร์ · ':'')+nfi+' ไฟล์'+(capped?' · แสดง '+GD_LIST_MAX+' รายการแรก ใช้ช่องค้นหาเพื่อให้แคบลง':tok?' · มีเพิ่มเติม':''));
+  }catch(e){
+    if(my!==gdSeq)return;
+    if(gdLifecycle(e))gdOff();else gdStat(gdMsg(e),true,gdAct(e,gdStat));
+  }finally{
+    if(my===gdSeq)$('#gdMore').disabled=gdBusy;
+  }
+}
+function gdGoto(n){if(gdBusy)return;gdPath=gdPath.slice(0,n);gdQ='';$('#gdQ').value='';gdLoad(false)}   // n = จำนวนชั้นโฟลเดอร์ที่คงไว้ (0 = รายการหลักของแหล่งนี้)
+function gdOpenFolder(f){if(gdBusy)return;gdPath.push({id:f.id,title:gdTitle(f)});gdQ='';$('#gdQ').value='';gdLoad(false)}
+function gdSetSrc(s){
+  if(gdBusy||!GD_SRC[s])return;
+  gdSrc=s;gdPath=[];gdQ='';$('#gdQ').value='';
+  if(gdMode==='script'){gdPrefSrc=s;gdSavePref()}
+  gdLoad(false);
+}
+function gdOpenPanel(mode){
+  if(!gdMcp)return;
+  gdMode=mode;gdQ='';gdPath=[];$('#gdQ').value='';
+  gdSrc=mode==='backup'?'recent':gdPrefSrc;
+  $('#gdTitle').textContent=mode==='backup'?'เลือกไฟล์สำรองจาก Google Drive':'เลือกบทจาก Google Drive';
+  $('#gdPanel').hidden=false;
+  if($('#gdPanel').scrollIntoView)$('#gdPanel').scrollIntoView({block:'nearest'});
+  gdLoad(false);
+}
+function gdSearch(){gdQ=$('#gdQ').value.trim().slice(0,100);gdLoad(false)}
+// นำไฟล์ที่ดาวน์โหลดมาเข้าตัวนำเข้าเดิม (.docx / .doc / .txt = เพิ่มเป็นบทใหม่ · .json = กล่องยืนยันกู้คืน)
+function gdImport(got,title,kd,f){
+  const base=kd.k==='gdoc'?title.replace(/\.(docx?|txt|json)$/i,''):title;
+  const mime=got.mime||String(f.mimeType||'');
+  const file=new File([got.u8],dvName(base,got.u8,mime),{type:mime});
+  file.disp=title;   // ชื่อจริงบน Drive (ไม่ผ่านการแก้อักขระพิเศษ)
+  return dvOpenIn(file);
+}
+async function gdPick(f){
+  if(gdBusy||!gdMcp)return;
+  const kd=gdKind(f);if(!kd)return;
+  const title=String(f.title||f.name||'').trim()||'ไฟล์จาก Drive',sz=+f.fileSize;
+  if(sz>GD_MAX){gdStat('ไฟล์ “'+title+'” ใหญ่เกินไป ('+gdSize(sz)+') · โปรแกรมรองรับไม่เกิน '+gdSize(GD_MAX),true);return}
+  gdLock(true);dvSay('');
+  gdStat('กำลังดาวน์โหลด “'+title+'” จาก Google Drive…');
+  try{
+    let ok=false;
+    if(kd.k==='gdoc'){
+      // Google Docs: ส่งออกเป็น Word ก่อน (ตารางในบทยังอยู่) · ถ้าไม่ได้ค่อยใช้ข้อความธรรมดา
+      let first=null;
+      try{first=await gdDownload(f.id,GD_DOCX)}catch(e){if(!e||e.code!=='tool_error')throw e}
+      if(first)ok=await gdImport(first,title,kd,f);
+      if(!ok){dvSay('');ok=await gdImport(await gdDownload(f.id),title,kd,f)}
+    }else ok=await gdImport(await gdDownload(f.id),title,kd,f);
+    if(ok){
+      if(kd.k==='json'){$('#gdPanel').hidden=true;gdStat('')}
+      else gdStat('เพิ่มเป็นบทใหม่แล้ว: '+title);
+    }else gdStat('นำเข้า “'+title+'” ไม่สำเร็จ · ดูรายละเอียดในข้อความด้านล่าง',true);
+  }catch(e){
+    if(gdLifecycle(e))gdOff();else gdStat(gdMsg(e),true,gdAct(e,gdStat));
+  }finally{gdLock(false)}
+}
+// บันทึกไฟล์สำรองลง My Drive: สร้างไฟล์ใหม่เฉพาะตอนที่กดปุ่ม · ไม่ลองซ้ำเองเมื่อไม่แน่ใจผล (กันไฟล์ซ้ำ)
+async function gdSaveDrive(){
+  if(gdBusy||!gdMcp)return;
+  gdLock(true);
+  dvSay('กำลังบันทึกไฟล์สำรองลง Google Drive… (ครั้งแรก Claude อาจถามขออนุญาต ให้เลือกอนุญาต)');
+  try{
+    const text=dvBackupText(),name='The-Dubbing-Highlighter-backup-'+dvStamp(true)+'.json';
+    const bytes=new TextEncoder().encode(text).length;
+    const base={title:name,contentMimeType:'application/json',disableConversionToGoogleType:true};
+    let input;
+    if(bytes<=GD_INLINE)input=Object.assign({textContent:text},base);
+    else{
+      let fa=false;try{const l=await gdMcp.listTools();fa=!!(l&&l.fileArgs)}catch(e){}
+      if(!fa||bytes>GD_FILE_MAX){
+        dvSay('ข้อมูลทั้งหมดมีขนาด '+gdSize(bytes)+' ใหญ่เกินกว่าจะส่งผ่าน Claude ไปที่ Drive · ใช้ “ดาวน์โหลดไฟล์สำรอง” แล้วอัปโหลดเองแทน',true);
+        return;
+      }
+      input=Object.assign({base64Content:{$file:{data:new Blob([text],{type:'application/json'}),name,type:'application/json'}}},base);
+    }
+    const p=gdJson(gdPayload(await gdMcp.callTool(GD,'create_file',input,{cache:false})));
+    dvSay('บันทึกไฟล์สำรองลง Google Drive แล้ว (My Drive): '+name);
+    const u=gdSafeUrl(p&&typeof p==='object'&&(p.viewUrl||p.webViewLink));
+    if(u){const a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener noreferrer';a.textContent='เปิดใน Google Drive';dvMsg.append(' · ',a)}
+  }catch(e){
+    if(gdLifecycle(e)){gdOff();return}
+    const c=e&&e.code;
+    const unsure=!(c==='server_not_connected'||c==='server_not_found'||c==='needs_reauth'||c==='selection_required'||c==='not_in_manifest'||c==='consent_required'||c==='approval_required'||c==='blocked_by_policy'||c==='bad_request'||c==='transform_error'||c==='tool_error');
+    dvSay('บันทึกลง Google Drive ไม่สำเร็จ: '+gdMsg(e)+(unsure?' · ยังไม่ทราบว่าไฟล์ถูกสร้างแล้วหรือยัง ตรวจใน Google Drive ก่อนกดบันทึกซ้ำ (จะได้ไม่มีไฟล์ซ้ำ)':''),true,gdAct(e,dvSay));
+  }finally{gdLock(false)}
+}
+$('#gdOpen').onclick=()=>gdOpenPanel('script');
+$('#gdRestore').onclick=()=>gdOpenPanel('backup');
+$('#gdSave').onclick=gdSaveDrive;
+$('#gdClose').onclick=()=>{gdSeq++;$('#gdPanel').hidden=true};
+$('#gdGo').onclick=gdSearch;
+$('#gdMore').onclick=()=>gdLoad(true);
+$('#gdSrcs').addEventListener('click',e=>{const b=e.target.closest('button[data-s]');if(b)gdSetSrc(b.dataset.s)});
+$('#gdSort').onchange=e=>{gdSort=e.target.value==='time'?'time':'name';gdSavePref();gdRender()};
+$('#gdAll').onchange=e=>{gdAll=e.target.checked;gdSavePref();gdLoad(false)};
+$('#gdQ').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();gdSearch()}});
+function gdEnable(m){gdMcp=m;$('#gdNote').hidden=true;$('#gd').hidden=false;$('#dvPick').textContent='เลือกไฟล์บทจากเครื่อง';dvHints()}
+async function gdInit(){
+  if(APP||!window.claude||typeof window.claude.use!=='function')return;
+  let m=null;try{m=await window.claude.use('mcp')}catch(e){}
+  if(m&&typeof m.callTool==='function'){gdEnable(m);return}
+  // ผู้ใช้อาจกด “ไม่อนุญาต” ไว้ตอนเปิดหน้า → บอกทางเปิดสิทธิ์ให้ (ไม่ถามซ้ำเอง)
+  let st='';try{const pm=await window.claude.use('permissions');st=pm&&typeof pm.state==='function'?await pm.state('mcp'):''}catch(e){}
+  if(st==='denied')$('#gdNote').hidden=false;
+}
+$('#gdPerm').onclick=async()=>{
+  let pm=null;try{pm=await window.claude.use('permissions')}catch(e){}
+  if(!pm||typeof pm.manage!=='function'){dvSay('เปิดสิทธิ์ได้ที่เมนู Permissions ของหน้านี้ใน Claude',true);return}
+  try{await pm.manage()}catch(e){dvSay('เปิดหน้าต่างสิทธิ์ไม่ได้ · ใช้เมนู Permissions ของหน้านี้ใน Claude แทน',true);return}
+  let m=null;try{m=await window.claude.use('mcp')}catch(e){}
+  if(m&&typeof m.callTool==='function'){gdEnable(m);dvSay('เปิดใช้ Google Drive ผ่าน Claude แล้ว')}
+  else dvSay('ปรับสิทธิ์แล้ว · ถ้ายังไม่เห็นปุ่ม Google Drive ให้โหลดหน้านี้ใหม่');
+};
+
+$('#chars').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.classList.contains('chip')){
+    const n=b.dataset.n;
+    if(P(n)&&active===n){setPick(n,false);active=null}
+    else{setPick(n,true);active=n}
+  }else if(active){
+    const n=active;
+    if(b.dataset.h){S.colors[n]=b.dataset.h;S.pick[n]=true;active=null}
+    else if(b.dataset.a==='off'){delete S.pick[n];active=null}
+    else if(b.dataset.a==='del'){S.extra=S.extra.filter(v=>v!==n);delete S.pick[n];delete S.colors[n];active=null}
+  }else return;
+  refresh();save();
+});
+$('#addBtn').onclick=()=>{
+  const n=$('#newName').value.trim();if(!n)return;
+  if(!(n in counts))S.extra.push(n);
+  setPick(n,true);active=n;$('#newName').value='';refresh();save();
+};
+$('#newName').addEventListener('keydown',e=>{if(e.key==='Enter')$('#addBtn').click()});
+$('#o-speech').checked=S.opt.full&&S.opt.cont!==false;
+$('#o-speech').onchange=e=>{S.opt.full=e.target.checked;S.opt.cont=e.target.checked;refresh();save()};
+$('#o-size').value=S.opt.size;
+$('#o-size').oninput=e=>{S.opt.size=+e.target.value;view();save()};
+
+// ---- ลากขอบเพื่อปรับขนาด (ความกว้างของหน้า / ความสูงของบทและช่องใส่บท) พร้อมแสดง % เทียบกับขนาดเดิม (= 100%) ----
+const HT={h:'#out',th:'#src'};
+const DIM={w:'กว้าง',h:'สูง (กรอบบท)',th:'สูง (ช่องใส่บท)'};
+const mainEl=$('main'),tipEl=$('#rzTip');
+const clientW=()=>document.documentElement.clientWidth;
+const curW=()=>mainEl.getBoundingClientRect().width;
+const narrowMQ=matchMedia('(max-width:640px)');   // จอแคบ (มือถือ) ไม่มีที่จับความกว้าง หน้าเต็มจออยู่แล้ว
+const baseTh=()=>.52*innerHeight;           // 100% = ความสูงเดิมของช่องใส่บท (52% ของความสูงจอ)
+let natOut=0;
+function natural(){                          // 100% = ความสูงเดิมของกรอบบท (พอดีเนื้อหา ไม่ต้องเลื่อน)
+  const el=$('#out');
+  if(!el.getClientRects().length)return natOut;    // ซ่อนอยู่ (อยู่หน้าใส่บท) ใช้ค่าล่าสุด
+  const er=el.getBoundingClientRect(),last=el.lastElementChild;
+  if(!last){natOut=er.height;return natOut}
+  const cs=getComputedStyle(el),ls=getComputedStyle(last);
+  natOut=last.getBoundingClientRect().bottom-er.top+el.scrollTop+(parseFloat(ls.marginBottom)||0)+(parseFloat(cs.paddingBottom)||0)+(parseFloat(cs.borderBottomWidth)||0);
+  return natOut;
+}
+const pc=(v,b)=>b>0?Math.round(v/b*100):null;
+const fp=p=>p==null?'–':p+'%';
+const wtxt=z=>z.w.full?'เต็มจอ':fp(z.w.pct);
+// คำบรรยายใต้ตัวเลข: เทียบกับขนาดมาตรฐาน 100% (ถ้ายังเป็นค่าเริ่มต้นจะบอกว่า "ค่าเริ่มต้น")
+const delta=(p,k)=>p==null?'':(k==='w'?!S.opt.w:!S.opt[k])?'ค่าเริ่มต้น':p>100?'ขยาย +'+(p-100)+'%':p<100?'ย่อ −'+(100-p)+'%':'ขนาดมาตรฐาน';
+function sizes(){
+  const o=S.opt,w=Math.round(curW()),nat=natural(),bt=baseTh();
+  return {w:{px:w,pct:pc(w,WBASE),full:narrowMQ.matches},
+          h:{px:Math.round(o.h||nat),pct:o.h?pc(o.h,nat):100},
+          th:{px:Math.round(o.th||bt),pct:o.th?pc(o.th,bt):100}};
+}
+function updLabels(){
+  const z=sizes();
+  for(const k in HT){
+    const lab=$('#lab-'+k);lab.querySelector('.lw').textContent='กว้าง '+wtxt(z);lab.querySelector('.lh').textContent='สูง '+fp(z[k].pct);
+    const g=$('#hg-'+k);g.setAttribute('aria-valuenow',z[k].px);g.setAttribute('aria-valuetext',fp(z[k].pct)+' ('+z[k].px+' px)');
+  }
+  document.querySelectorAll('.wgrip').forEach(g=>{g.setAttribute('aria-valuenow',z.w.px);g.setAttribute('aria-valuetext',fp(z.w.pct)+' ('+z.w.px+' px)')});
+  $('#rzNow').textContent='กว้าง '+wtxt(z)+' · กรอบบทสูง '+fp(z.h.pct)+' · ช่องใส่บทสูง '+fp(z.th.pct);
+  return z;
+}
+// ป้ายบอก % ลอยอยู่ข้างที่จับ (ตอนชี้/โฟกัส/ลาก/กดคีย์บอร์ด)
+let tipG=null,tipT=0,hideT=0,holdUntil=0;
+function fillTip(g,z){
+  const k=g.dataset.k,kk=(k==='l'||k==='r')?'w':k,v=z[kk];
+  tipEl.querySelector('b').textContent=fp(v.pct);
+  tipEl.querySelector('small').textContent=delta(v.pct,kk)+' · '+DIM[kk]+' '+v.px+' px';
+  const tw=tipEl.offsetWidth,th=tipEl.offsetHeight,gr=g.getBoundingClientRect(),vw=clientW(),vh=innerHeight;
+  let x,y;
+  if(kk==='w'){y=vh/2-th/2;x=k==='l'?gr.right+8:gr.left-8-tw}
+  else{x=gr.left+gr.width/2-tw/2;y=gr.top-th-8;if(y<8)y=gr.bottom+8}
+  x=Math.min(Math.max(8,x),vw-tw-8);y=Math.min(Math.max(8,y),vh-th-8);
+  tipEl.style.transform='translate('+Math.round(x)+'px,'+Math.round(y)+'px)';
+}
+function showTip(g,ms){clearTimeout(hideT);tipG=g;holdUntil=ms?Date.now()+ms:0;fillTip(g,updLabels());tipEl.classList.add('on');if(ms)hideT=setTimeout(hideTip,ms)}
+function hideTip(){clearTimeout(hideT);clearTimeout(tipT);tipG=null;tipEl.classList.remove('on')}
+function applyLayout(){
+  const o=S.opt;
+  document.documentElement.style.setProperty('--w',(o.w||WDEF)+'px');
+  for(const k in HT){const el=$(HT[k]);if(o[k]){el.style.height=o[k]+'px';el.style.minHeight=HMIN+'px'}else{el.style.height='';el.style.minHeight=''}}
+  $('#out').classList.toggle('fixed',!!o.h);
+  document.querySelectorAll('.wgrip').forEach(g=>{g.setAttribute('aria-valuemin',WMIN);g.setAttribute('aria-valuemax',Math.max(WMIN,clientW()))});
+  for(const k in HT){const g=$('#hg-'+k);g.setAttribute('aria-valuemin',HMIN);g.setAttribute('aria-valuemax',HMAX)}
+  const z=updLabels();if(tipG)fillTip(tipG,z);
+}
+const cw=v=>Math.round(Math.min(Math.max(WMIN,v),Math.max(WMIN,clientW())));
+const ch=v=>Math.round(Math.min(Math.max(HMIN,v),HMAX));
+document.querySelectorAll('.wgrip,.hgrip').forEach(g=>{
+  const k=g.dataset.k,isW=k==='l'||k==='r';let d=null,hov=false;
+  g.addEventListener('pointerenter',e=>{if(e.pointerType!=='mouse')return;hov=true;if(!d){clearTimeout(tipT);tipT=setTimeout(()=>{if(hov&&!d)showTip(g,0)},200)}});
+  g.addEventListener('pointerleave',()=>{
+    hov=false;clearTimeout(tipT);if(d)return;
+    const rest=holdUntil-Date.now();   // ที่จับอาจเลื่อนหนีเมาส์ตอนคืนค่า/ลากชนขอบ → ถ้ากำลังโชว์ค้างไว้ ให้โชว์ต่อจนครบเวลาแล้วค่อยซ่อน
+    if(rest>0){clearTimeout(hideT);hideT=setTimeout(hideTip,rest)}else hideTip();
+  });
+  g.addEventListener('focus',()=>{if(g.matches(':focus-visible'))showTip(g,0)});
+  g.addEventListener('blur',()=>{if(!d)hideTip()});
+  g.addEventListener('pointerdown',e=>{
+    if(e.button>0)return;
+    d={x:e.clientX,y:e.clientY,w:curW(),h:isW?0:$(HT[k]).getBoundingClientRect().height};
+    try{g.setPointerCapture(e.pointerId)}catch(_){}g.classList.add('on');document.body.classList.add('dragging',isW?'dw':'dh');e.preventDefault();
+    clearTimeout(tipT);showTip(g,0);
+  });
+  g.addEventListener('pointermove',e=>{
+    if(!d)return;
+    if(isW)S.opt.w=cw(d.w+(e.clientX-d.x)*(k==='r'?2:-2));else S.opt[k]=ch(d.h+(e.clientY-d.y));
+    applyLayout();
+  });
+  const end=()=>{if(!d)return;d=null;g.classList.remove('on');document.body.classList.remove('dragging','dw','dh');save();applyLayout();clearTimeout(hideT);holdUntil=Date.now()+900;if(!hov)hideT=setTimeout(hideTip,900)};
+  g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end);
+  g.addEventListener('dblclick',()=>{if(isW)S.opt.w=0;else S.opt[k]=0;applyLayout();save();showTip(g,1100)});
+  g.addEventListener('keydown',e=>{
+    const step=e.shiftKey?60:20;let hit=true;
+    if(isW){
+      const cur=Math.round(curW());
+      if(e.key==='ArrowRight')S.opt.w=cw(cur+step);else if(e.key==='ArrowLeft')S.opt.w=cw(cur-step);else if(e.key==='Home')S.opt.w=0;else hit=false;
+    }else{
+      const cur=Math.round($(HT[k]).getBoundingClientRect().height);
+      if(e.key==='ArrowDown')S.opt[k]=ch(cur+step);else if(e.key==='ArrowUp')S.opt[k]=ch(cur-step);else if(e.key==='Home')S.opt[k]=0;else hit=false;
+    }
+    if(hit){e.preventDefault();applyLayout();save();showTip(g,1400)}
+  });
+});
+$('#o-reset').onclick=()=>{S.opt.w=S.opt.h=S.opt.th=0;applyLayout();save()};
+addEventListener('resize',applyLayout);
+// เนื้อหา/แท็บเปลี่ยน → ความสูงเดิมของกรอบบทเปลี่ยน อัปเดต % ให้ตรง (หน่วงไว้ 1 เฟรม ไม่ให้หน่วงการแสดงผล)
+let lbT=0;const lbSoon=()=>{if(!lbT)lbT=requestAnimationFrame(()=>{lbT=0;updLabels()})};
+{const _view=view;view=function(){const r=_view.apply(this,arguments);lbSoon();return r}}
+{const _tab=tab;tab=function(){const r=_tab.apply(this,arguments);lbSoon();return r}}
+
+// ---- ช่องค้นหา: พิมพ์ → ไฮไลท์ทุกจุด · Enter / ▼ = จุดถัดไป · Shift+Enter / ▲ = จุดก่อนหน้า · Esc = ล้าง ----
+const ELECTRON=/Electron\//.test(navigator.userAgent);   // แอป Mac ไม่มีช่องค้นหาในตัว → ใช้ ⌘F / ⌘G ของเรา
+function qShow(el){   // เลื่อนให้จุดที่พบอยู่ในส่วนที่มองเห็น (ใต้แถบค้นหา เหนือคีย์บอร์ด)
+  if(!el)return;
+  const out=$('#out');
+  if(out.scrollHeight>out.clientHeight+1&&/auto|scroll/.test(getComputedStyle(out).overflowY)){
+    const ob=out.getBoundingClientRect(),eb=el.getBoundingClientRect();
+    out.scrollTop+=(eb.top-ob.top)-(out.clientHeight-eb.height)/2;
+  }
+  const vv=window.visualViewport,vh=vv?vv.height:innerHeight;
+  const qb=$('#qbar');   // แถบค้นหาจะลอยติดใต้แถบแท็บ → ส่วนที่เห็นเนื้อหาเริ่มใต้แถบทั้งสอง
+  const top=$('.importbar').getBoundingClientRect().bottom+(qb.classList.contains('on')?qb.offsetHeight:0)+8,bot=vh-8;
+  const r=el.getBoundingClientRect();
+  if(r.top<top||r.bottom>bot)window.scrollBy(0,r.top-(top+(bot-top)*0.3));
+}
+function qGo(d,still){
+  if(!QM)return;
+  QI=((QI+d)%QM+QM)%QM;
+  document.querySelectorAll('#out mark.cur').forEach(m=>m.classList.remove('cur'));
+  const els=document.querySelectorAll('#out mark[data-i="'+QI+'"]');
+  els.forEach(m=>m.classList.add('cur'));
+  $('#qCnt').textContent=`${QI+1}/${QN>QM?QM+'+':QN}`;
+  if(!still)qShow(els[0]);
+}
+let qT=0;
+function qSet(v,now){
+  Q=/\S/.test(v)?v:'';QI=0;clearTimeout(qT);qT=0;
+  const go=()=>{qT=0;view();qGo(0)};
+  if(now||!v)go();else qT=setTimeout(go,120);
+}
+$('#q').addEventListener('input',e=>qSet(e.target.value));
+$('#q').addEventListener('keydown',e=>{
+  if(e.isComposing)return;
+  if(e.key==='Enter'){
+    e.preventDefault();
+    if(!Q)return;
+    if(qT){clearTimeout(qT);qT=0;view();qGo(0)}   // ยังไม่ทันค้น (รอหน่วง) → ค้นทันทีแล้วไปจุดแรก
+    else qGo(e.shiftKey?-1:1);
+  }else if(e.key==='Escape'){if(Q){e.preventDefault();$('#q').value='';qSet('',true)}else $('#q').blur()}
+});
+$('#qNext').onclick=()=>qGo(1);
+$('#qPrev').onclick=()=>qGo(-1);
+$('#qClr').onclick=()=>{$('#q').value='';qSet('',true);$('#q').focus()};
+$('#qOnly').onchange=e=>{QONLY=e.target.checked;view();qGo(0)};
+$('#qOth').addEventListener('click',e=>{
+  const b=e.target.closest('.qo');if(!b)return;
+  S.cur=+b.dataset.i;QI=0;loadEp();save();qGo(0);
+});
+$('#out').addEventListener('click',e=>{   // ในโหมดแสดงเฉพาะบรรทัดที่พบ: แตะบรรทัด → กลับไปดูตำแหน่งนั้นในบททั้งหมด
+  if(!(QONLY&&QRG))return;
+  const ln=e.target.closest('.ln[data-r]');if(!ln)return;
+  const sel=window.getSelection&&String(window.getSelection());if(sel)return;
+  const rg=QRG[+ln.dataset.r];if(rg&&rg[0])QI=rg[0].i;
+  QONLY=false;$('#qOnly').checked=false;view();qGo(0);
+});
+document.addEventListener('keydown',e=>{
+  if(!ELECTRON||e.altKey||!(e.metaKey||e.ctrlKey))return;
+  const k=e.key.toLowerCase();
+  if(k==='f'){e.preventDefault();tab('view');const q=$('#q');q.focus();q.select()}
+  else if(k==='g'&&Q){e.preventDefault();qGo(e.shiftKey?-1:1)}
+});
+const tabsH=()=>{const bar=$('.importbar');document.documentElement.style.setProperty('--tabsH',(bar?bar.offsetHeight:0)+'px')};
+addEventListener('resize',tabsH);tabsH();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(tabsH);
+
+// ปุ่มเลือกธีมแบบสลับเปิด/ยกเลิก: ใช้ listener แยกจากสคริปต์หลักเพื่อให้ปุ่มยังทำงานได้
+// แม้ส่วนอื่นของแอปมีข้อผิดพลาด และไม่บันทึกธีมไว้เมื่อปิดกลับเป็นธีมต้นฉบับ
+
+loadEp();
+$('#p-view').hidden=false; $('#p-edit').hidden=true;
+applyLayout();
+dvInit();
+queueStatusUpdate();
+// ปิดการใช้งานตัวเชื่อมต่อ Google Drive
+</script>
+</body>
+</html>
